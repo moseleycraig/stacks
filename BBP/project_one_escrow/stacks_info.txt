@@ -1,2 +1,2 @@
-Stacks contract details link:
+Testnet contract details link:
 https://explorer.hiro.so/txid/0x5a060d026d974455f163d730cf723fdbaea8223f077630006c4fae6dddd3912e?chain=testnet
