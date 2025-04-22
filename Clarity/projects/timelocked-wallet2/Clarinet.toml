@@ -1,0 +1,39 @@
+[project]
+name = 'timelocked-wallet2'
+description = ''
+authors = []
+telemetry = true
+cache_dir = './.cache'
+requirements = []
+[contracts.dispatch-call2]
+path = 'contracts/dispatch-call2.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.locked-wallet-trait2]
+path = 'contracts/locked-wallet-trait2.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.smart-claimant2]
+path = 'contracts/smart-claimant2.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.static-call2]
+path = 'contracts/static-call2.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.timelocked-wallet2]
+path = 'contracts/timelocked-wallet2.clar'
+clarity_version = 3
+epoch = 3.1
+[repl.analysis]
+passes = ['check_checker']
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false

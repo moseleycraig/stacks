@@ -1,0 +1,145 @@
+(impl-trait 'ST3QFME3CANQFQNR86TYVKQYCFT7QX4PRXM1V9W6H.sip009-nft-trait.sip009-nft-trait)
+
+;; Constants
+(define-constant contract-owner tx-sender)
+(define-constant err-owner-only (err u100))
+(define-constant err-not-token-owner (err u101))
+(define-constant err-not-found (err u102))
+(define-constant err-invalid-level (err u103))
+(define-constant err-insufficient-exp (err u104))
+(define-constant err-invalid-merge (err u105))
+(define-constant err-not-active (err u106))
+
+;; Data Variables
+(define-non-fungible-token enhanced-bitbadge uint)
+(define-data-var last-token-id uint u0)
+
+;; Data Maps
+(define-map token-experience uint uint)
+(define-map token-levels uint uint)
+(define-map token-attributes uint (list 10 (string-utf8 24)))
+(define-map token-achievements uint (list 5 bool))
+(define-map token-metadata uint {base-uri: (string-ascii 256), is-active: bool})
+
+;; Public Functions
+(define-public (mint (recipient principal) (height uint) (tx (buff 1024)) (header (buff 80)) (proof { tx-index: uint, hashes: (list 14 (buff 32)), tree-depth: uint}))
+    (let
+        (
+            (token-id (+ (var-get last-token-id) u1))
+            (tx-was-mined (try! (contract-call? .clarity-bitcoin was-tx-mined-compact height tx header proof)))
+        )
+        (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+        (asserts! (is-eq tx-was-mined true) (err u106))
+        (try! (nft-mint? enhanced-bitbadge token-id recipient))
+        (var-set last-token-id token-id)
+        (map-set token-levels token-id u1)
+        (map-set token-experience token-id u0)
+        (map-set token-achievements token-id (list false false false false false))
+        (ok token-id)
+    )
+)
+
+(define-public (activate-badge (token-id uint) (base-uri (string-ascii 256)))
+    (let
+        (
+            (owner (unwrap! (nft-get-owner? enhanced-bitbadge token-id) err-not-found))
+        )
+        (asserts! (is-eq tx-sender owner) err-not-token-owner)
+        (map-set token-metadata token-id {base-uri: base-uri, is-active: true})
+        (ok true)
+    )
+)
+
+(define-public (gain-experience (token-id uint) (amount uint))
+    (let
+        (
+            (owner (unwrap! (nft-get-owner? enhanced-bitbadge token-id) err-not-found))
+            (current-exp (default-to u0 (map-get? token-experience token-id)))
+            (current-level (default-to u1 (map-get? token-levels token-id)))
+            (is-active (get is-active (default-to {base-uri: "", is-active: false} (map-get? token-metadata token-id))))
+        )
+        (asserts! (is-eq tx-sender owner) err-not-token-owner)
+        (asserts! is-active err-not-active)
+        (map-set token-experience token-id (+ current-exp amount))
+        (try! (check-level-up token-id))
+        (ok true)
+    )
+)
+
+(define-public (merge-badges (token-id-1 uint) (token-id-2 uint))
+    (let
+        (
+            (owner-1 (unwrap! (nft-get-owner? enhanced-bitbadge token-id-1) err-not-found))
+            (owner-2 (unwrap! (nft-get-owner? enhanced-bitbadge token-id-2) err-not-found))
+            (level-1 (default-to u1 (map-get? token-levels token-id-1)))
+            (level-2 (default-to u1 (map-get? token-levels token-id-2)))
+        )
+        (asserts! (and (is-eq tx-sender owner-1) (is-eq tx-sender owner-2)) err-not-token-owner)
+        (asserts! (is-eq level-1 level-2) err-invalid-merge)
+        (try! (nft-burn? enhanced-bitbadge token-id-2 tx-sender))
+        (map-set token-levels token-id-1 (+ level-1 u1))
+        (ok true)
+    )
+)
+
+;; Private Functions
+(define-private (check-level-up (token-id uint))
+    (let
+        (
+            (current-exp (default-to u0 (map-get? token-experience token-id)))
+            (current-level (default-to u1 (map-get? token-levels token-id)))
+            (exp-needed (* current-level u1000))
+        )
+        (if (>= current-exp exp-needed)
+            (begin
+                (map-set token-levels token-id (+ current-level u1))
+                (map-set token-experience token-id u0)
+                (try! (check-achievements token-id))
+                (ok true)
+            )
+            (ok false)
+        )
+    )
+)
+
+(define-private (check-achievements (token-id uint))
+    (let
+        (
+            (current-level (default-to u1 (map-get? token-levels token-id)))
+            (achievements (default-to (list false false false false false) (map-get? token-achievements token-id)))
+        )
+        (if (>= current-level u5)
+            (map-set token-achievements token-id (replace-at? achievements u0 true))
+            (ok achievements)
+        )
+    )
+)
+
+;; Read-only Functions
+(define-read-only (get-token-experience (token-id uint))
+    (ok (default-to u0 (map-get? token-experience token-id)))
+)
+
+(define-read-only (get-token-level (token-id uint))
+    (ok (default-to u1 (map-get? token-levels token-id)))
+)
+
+;; SIP009 Implementation
+(define-read-only (get-last-token-id)
+    (ok (var-get last-token-id))
+)
+
+(define-read-only (get-token-uri (token-id uint))
+    (ok (some (get base-uri (default-to {base-uri: "", is-active: false} (map-get? token-metadata token-id)))))
+)
+
+(define-read-only (get-owner (token-id uint))
+    (ok (nft-get-owner? enhanced-bitbadge token-id))
+)
+
+(define-public (transfer (token-id uint) (sender principal) (recipient principal))
+    (begin
+        (asserts! (is-eq tx-sender sender) err-not-token-owner)
+        (nft-transfer? enhanced-bitbadge token-id sender recipient)
+    )
+)

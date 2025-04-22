@@ -1,0 +1,33 @@
+stateDiagram-v2
+    [*] --> RawTransaction : concat-tx()
+    
+    state RawTransaction {
+        [*] --> TransactionParts
+        TransactionParts --> Version
+        TransactionParts --> Inputs : concat-ins()
+        TransactionParts --> Outputs : concat-outs()
+        TransactionParts --> Locktime
+        
+        state Inputs {
+            [*] --> InputCount
+            InputCount --> OutPoint
+            OutPoint --> ScriptSig
+            ScriptSig --> Sequence
+        }
+        
+        state Outputs {
+            [*] --> OutputCount
+            OutputCount --> Value
+            Value --> ScriptPubKey
+        }
+    }
+    
+    state BlockHeader {
+        [*] --> HeaderParts : concat-header()
+        HeaderParts --> BlockVersion
+        HeaderParts --> ParentHash
+        HeaderParts --> MerkleRoot
+        HeaderParts --> Timestamp
+        HeaderParts --> NBits
+        HeaderParts --> Nonce
+    }

@@ -1,0 +1,23 @@
+stateDiagram-v2
+    [*] --> NFTContract
+    
+    state NFTContract {
+        TokenMetadata --> GetLastTokenId
+        TokenMetadata --> GetTokenURI
+        
+        TokenOwnership --> GetOwner
+        TokenOwnership --> Transfer
+        
+        state Transfer {
+            CheckOwnership --> ValidateSender
+            ValidateSender --> UpdateOwnership
+            UpdateOwnership --> EmitTransferEvent
+        }
+    }
+    
+    state "Response Types" as ResponseTypes {
+        GetLastTokenId --> uint
+        GetTokenURI --> OptionalString
+        GetOwner --> OptionalPrincipal
+        Transfer --> Boolean
+    }

@@ -1,0 +1,36 @@
+stateDiagram-v2
+    [*] --> ParseTransaction
+    
+    state ParseTransaction {
+        [*] --> ReadVersion
+        ReadVersion --> ReadInputs
+        ReadInputs --> ReadOutputs
+        ReadOutputs --> ReadLocktime
+        
+        state ReadInputs {
+            [*] --> ParseVarInt: Count
+            ParseVarInt --> ReadOutPoint
+            ReadOutPoint --> ReadScriptSig
+            ReadScriptSig --> ReadSequence
+        }
+        
+        state ReadOutputs {
+            [*] --> ParseVarInt: Count
+            ParseVarInt --> ReadValue
+            ReadValue --> ReadScriptPubKey
+        }
+    }
+    
+    state VerifyTransaction {
+        [*] --> VerifyBlockHeader
+        VerifyBlockHeader --> VerifyMerkleProof
+        
+        state VerifyMerkleProof {
+            [*] --> CalculateTransactionID
+            CalculateTransactionID --> ValidateProofPath
+            ValidateProofPath --> CompareMerkleRoot
+        }
+    }
+    
+    ParseTransaction --> VerifyTransaction: Parsed TX Data
+    VerifyTransaction --> [*]: Verification Result

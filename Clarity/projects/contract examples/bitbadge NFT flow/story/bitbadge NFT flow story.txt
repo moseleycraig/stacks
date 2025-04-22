@@ -1,0 +1,5 @@
+
+
+The BitBadge contract is a Bitcoin-verified NFT minting system that leverages Clarity's blockchain verification capabilities. It creates non-fungible tokens (NFTs) that can only be minted by the contract owner after confirming a specific Bitcoin transaction, adding a layer of cryptographic authenticity to the token creation process.
+
+The contract's design ensures strict control over token generation and transfer. By requiring Bitcoin transaction verification during minting and enforcing ownership checks during transfers, it creates a secure, traceable mechanism for creating unique digital badges or tokens with provable origins directly linked to Bitcoin blockchain events.
