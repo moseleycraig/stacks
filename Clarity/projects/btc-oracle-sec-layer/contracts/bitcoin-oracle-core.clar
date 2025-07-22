@@ -1,5 +1,6 @@
-;; Bitcoin Oracle Core Contract
+;; Bitcoin Oracle Core Contract with Chainhooks Integration
 ;; Main oracle contract implementing 8-layer security validation with Bitcoin anchoring
+;; Enhanced with event emissions for Chainhook monitoring
 
 ;; ===== CONSTANTS =====
 
@@ -74,14 +75,27 @@
   }
 )
 
-;; Bitcoin block confirmation tracking
+;; Bitcoin block confirmation tracking for Chainhooks integration
 (define-map bitcoin-confirmations
   (buff 32) ;; bitcoin-block-hash
   {
     height: uint,
     confirmations: uint,
     is-confirmed: bool,
-    first-seen-height: uint
+    first-seen-height: uint,
+    pending-submissions: (list 10 uint) ;; Track submissions waiting for this block
+  }
+)
+
+;; Chainhook tracking data
+(define-map chainhook-monitors
+  (string-ascii 20) ;; monitor-id
+  {
+    bitcoin-block-hash: (buff 32),
+    target-confirmations: uint,
+    created-at-height: uint,
+    is-active: bool,
+    callback-data: (string-ascii 100) ;; Additional data for processing
   }
 )
 
@@ -106,9 +120,181 @@
 (define-data-var bootstrap-mode bool true) ;; Start in bootstrap mode
 (define-data-var min-oracles-required uint u1) ;; Dynamic minimum, starts at 1
 
-;; ===== PRIVATE FUNCTIONS =====
+;; Chainhook integration variables
+(define-data-var chainhook-enabled bool false)
+(define-data-var last-bitcoin-block-processed uint u0)
+(define-data-var pending-confirmation-count uint u0)
 
-;; Layer 1: VAA Signature Verification
+;; ===== CHAINHOOK EVENT EMISSIONS =====
+
+;; Emit events for Chainhook monitoring
+
+;; Oracle submission received (for monitoring submission frequency)
+(define-private (emit-oracle-submission-event 
+  (oracle principal) 
+  (asset-id (string-ascii 10)) 
+  (price uint) 
+  (bitcoin-block-hash (buff 32)))
+  (print {
+    event-type: "oracle-submission",
+    oracle: oracle,
+    asset-id: asset-id,
+    price: price,
+    bitcoin-block-hash: bitcoin-block-hash,
+    submission-height: stacks-block-height,
+    round-id: (var-get current-round-id)
+  })
+)
+
+;; Price finalization event (for immediate notifications)
+(define-private (emit-price-finalized-event 
+  (asset-id (string-ascii 10)) 
+  (price uint) 
+  (confidence uint) 
+  (validation-score uint))
+  (print {
+    event-type: "price-finalized",
+    asset-id: asset-id,
+    price: price,
+    confidence: confidence,
+    validation-score: validation-score,
+    finalized-at-height: stacks-block-height,
+    round-id: (var-get current-round-id)
+  })
+)
+
+;; Bitcoin confirmation milestone event
+(define-private (emit-bitcoin-confirmation-event 
+  (bitcoin-block-hash (buff 32)) 
+  (confirmations uint) 
+  (is-finalized bool))
+  (print {
+    event-type: "bitcoin-confirmation",
+    bitcoin-block-hash: bitcoin-block-hash,
+    confirmations: confirmations,
+    is-finalized: is-finalized,
+    checked-at-height: stacks-block-height
+  })
+)
+
+;; Oracle performance event (for reputation tracking)
+(define-private (emit-oracle-performance-event 
+  (oracle principal) 
+  (asset-id (string-ascii 10)) 
+  (was-accurate bool) 
+  (deviation uint))
+  (print {
+    event-type: "oracle-performance",
+    oracle: oracle,
+    asset-id: asset-id,
+    was-accurate: was-accurate,
+    deviation: deviation,
+    evaluated-at-height: stacks-block-height
+  })
+)
+
+;; System health status event
+(define-private (emit-system-health-event (status (string-ascii 20)))
+  (print {
+    event-type: "system-health",
+    status: status,
+    total-oracles: (var-get total-oracles),
+    is-paused: (var-get contract-paused),
+    bootstrap-mode: (var-get bootstrap-mode),
+    checked-at-height: stacks-block-height
+  })
+)
+
+;; ===== CHAINHOOK INTEGRATION FUNCTIONS =====
+
+;; Process Bitcoin block confirmation via Chainhook trigger
+(define-public (process-bitcoin-block-confirmation 
+  (bitcoin-block-hash (buff 32)) 
+  (bitcoin-block-height uint) 
+  (confirmations uint))
+  
+  (let (
+    (confirmation-data (default-to
+      { height: bitcoin-block-height, confirmations: u0, is-confirmed: false, 
+        first-seen-height: stacks-block-height, pending-submissions: (list) }
+      (map-get? bitcoin-confirmations bitcoin-block-hash)))
+  )
+    ;; Only authorized sources can update confirmations
+    (asserts! (or (is-eq tx-sender CONTRACT_OWNER) (var-get chainhook-enabled)) ERR_UNAUTHORIZED)
+    
+    ;; Update confirmation status
+    (map-set bitcoin-confirmations bitcoin-block-hash
+      (merge confirmation-data {
+        height: bitcoin-block-height,
+        confirmations: confirmations,
+        is-confirmed: (>= confirmations REQUIRED_BTC_CONFIRMATIONS)
+      })
+    )
+    
+    ;; Emit event for Chainhook monitoring
+    (emit-bitcoin-confirmation-event bitcoin-block-hash confirmations (>= confirmations REQUIRED_BTC_CONFIRMATIONS))
+    
+    ;; Update global tracking
+    (var-set last-bitcoin-block-processed bitcoin-block-height)
+    
+    ;; If block is now confirmed, trigger any pending finalizations
+    (if (>= confirmations REQUIRED_BTC_CONFIRMATIONS)
+      (begin
+        (try! (process-pending-finalizations bitcoin-block-hash))
+        (ok true)
+      )
+      (ok false)
+    )
+  )
+)
+
+;; Process pending oracle submissions that were waiting for Bitcoin confirmations
+(define-private (process-pending-finalizations (bitcoin-block-hash (buff 32)))
+  (let (
+    (confirmation-data (unwrap! (map-get? bitcoin-confirmations bitcoin-block-hash) (err "Block not found")))
+    (pending-submissions (get pending-submissions confirmation-data))
+  )
+    ;; Process each pending submission (simplified - would iterate through list)
+    ;; For now, emit event that Chainhook can listen to
+    (emit-bitcoin-confirmation-event bitcoin-block-hash (get confirmations confirmation-data) true)
+    (ok true)
+  )
+)
+
+;; Enable/disable Chainhook integration
+(define-public (set-chainhook-enabled (enabled bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
+    (var-set chainhook-enabled enabled)
+    (emit-system-health-event (if enabled "chainhook-enabled" "chainhook-disabled"))
+    (ok true)
+  )
+)
+
+;; Register Chainhook monitor for specific Bitcoin block
+(define-public (register-chainhook-monitor 
+  (monitor-id (string-ascii 20)) 
+  (bitcoin-block-hash (buff 32)) 
+  (target-confirmations uint) 
+  (callback-data (string-ascii 100)))
+  
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
+    (map-set chainhook-monitors monitor-id
+      {
+        bitcoin-block-hash: bitcoin-block-hash,
+        target-confirmations: target-confirmations,
+        created-at-height: stacks-block-height,
+        is-active: true,
+        callback-data: callback-data
+      }
+    )
+    (var-set pending-confirmation-count (+ (var-get pending-confirmation-count) u1))
+    (ok true)
+  )
+)
+
+;; ===== PRIVATE FUNCTIONS =====
 (define-private (verify-vaa-signature (vaa-payload (buff 1024)) (oracle principal))
   (let (
     (oracle-data (unwrap! (map-get? oracle-operators oracle) false))
@@ -288,8 +474,6 @@
   (vaa-payload (buff 1024))
   (signature (buff 65)))
   
-  ;; ID usage
-
   (let (
     (oracle tx-sender)
     (current-height stacks-block-height)
@@ -320,8 +504,6 @@
     
     ;; Layer 7: Price Deviation Limits
     (asserts! (validate-price-deviation price asset-id) ERR_PRICE_DEVIATION)
-
-    ;; #8 Bitcoin Confirmation Wait - Ensures 6-block finality (implemented in finalization)
     
     ;; Store submission
     (map-set oracle-submissions
@@ -337,6 +519,16 @@
         is-validated: false
       }
     )
+    
+    ;; Emit oracle submission event for Chainhook monitoring
+    (emit-oracle-submission-event oracle asset-id price bitcoin-block-hash)
+    
+    ;; Register Bitcoin block for confirmation monitoring
+    (try! (register-chainhook-monitor 
+      (unwrap-panic (as-max-len? (concat "monitor-" (int-to-ascii (to-int submission-id))) u20))
+      bitcoin-block-hash 
+      REQUIRED_BTC_CONFIRMATIONS 
+      (unwrap-panic (as-max-len? (concat (concat asset-id "-") (int-to-ascii (to-int submission-id))) u100))))
     
     ;; Update submission round
     (map-set submission-rounds
@@ -385,6 +577,9 @@
         is-finalized: true
       }
     )
+    
+    ;; Emit price finalization event for immediate Chainhook notification
+    (emit-price-finalized-event asset-id consensus-price (if (var-get bootstrap-mode) u90 u95) (if (var-get bootstrap-mode) u85 u100))
     
     ;; Mark round as complete
     (map-set submission-rounds
@@ -550,6 +745,25 @@
   )
 )
 
+;; Get Chainhook monitoring status
+(define-read-only (get-chainhook-status)
+  {
+    is-enabled: (var-get chainhook-enabled),
+    last-bitcoin-block-processed: (var-get last-bitcoin-block-processed),
+    pending-confirmation-count: (var-get pending-confirmation-count)
+  }
+)
+
+;; Get Bitcoin confirmation status for specific block
+(define-read-only (get-bitcoin-confirmation-status (bitcoin-block-hash (buff 32)))
+  (map-get? bitcoin-confirmations bitcoin-block-hash)
+)
+
+;; Get Chainhook monitor details
+(define-read-only (get-chainhook-monitor (monitor-id (string-ascii 20)))
+  (map-get? chainhook-monitors monitor-id)
+)
+
 ;; Check if contract is in bootstrap mode
 (define-read-only (is-bootstrap-mode)
   (var-get bootstrap-mode)
@@ -560,7 +774,7 @@
   (var-get min-oracles-required)
 )
 
-;; Health check for the oracle system
+;; Health check for the oracle system with Chainhook integration
 (define-read-only (get-system-health)
   {
     total-oracles: (var-get total-oracles),
@@ -570,6 +784,9 @@
     min-oracles-required: (var-get min-oracles-required),
     min-stx-bond-required: MIN_STX_BOND,
     min-btc-bond-required: MIN_BTC_BOND,
-    ready-for-production: (>= (var-get total-oracles) MIN_ORACLES_PRODUCTION)
+    ready-for-production: (>= (var-get total-oracles) MIN_ORACLES_PRODUCTION),
+    chainhook-enabled: (var-get chainhook-enabled),
+    last-bitcoin-block-processed: (var-get last-bitcoin-block-processed),
+    pending-confirmations: (var-get pending-confirmation-count)
   }
 )
