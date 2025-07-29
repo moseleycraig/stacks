@@ -730,28 +730,28 @@
   )
 )
 
-;; Get all DeFi protocols integration summary
-(define-read-only (get-all-defi-integrations)
-  {
+;; Get all DeFi protocols integration summary (public function for demo)
+(define-public (get-all-defi-integrations)
+  (ok {
     btc-integrations: {
-      alex: (alex-get-price-for-amm "BTC"),
-      velar: (velar-get-liquidity-data "BTC"),
-      hermetica: (hermetica-get-usdh-rate "BTC")
+      alex: (get-alex-price-data "BTC"),
+      velar: (get-velar-liquidity-data-readonly "BTC"),
+      hermetica: (get-hermetica-usdh-data-readonly "BTC")
     },
     eth-integrations: {
-      alex: (alex-get-price-for-amm "ETH"),
-      velar: (velar-get-liquidity-data "ETH"),
-      hermetica: (hermetica-get-usdh-rate "ETH")
+      alex: (get-alex-price-data "ETH"),
+      velar: (get-velar-liquidity-data-readonly "ETH"),
+      hermetica: (get-hermetica-usdh-data-readonly "ETH")
     },
     usdc-integrations: {
-      alex: (alex-get-price-for-amm "USDC"),
-      velar: (velar-get-liquidity-data "USDC"),
-      hermetica: (hermetica-get-usdh-rate "USDC")
+      alex: (get-alex-price-data "USDC"),
+      velar: (get-velar-liquidity-data-readonly "USDC"),
+      hermetica: (get-hermetica-usdh-data-readonly "USDC")
     },
     stax-integrations: {
-      alex: (alex-get-price-for-amm "STAX"),
-      velar: (velar-get-liquidity-data "STAX"),
-      hermetica: (hermetica-get-usdh-rate "STAX")
+      alex: (get-alex-price-data "STAX"),
+      velar: (get-velar-liquidity-data-readonly "STAX"),
+      hermetica: (get-hermetica-usdh-data-readonly "STAX")
     },
     
     ;; Overall system health for DeFi
@@ -762,7 +762,112 @@
       defi-protocols-supported: u3,
       integration-health: "excellent"
     }
-  }
+  })
+)
+
+;; Read-only versions of DeFi integration functions (no state changes)
+(define-read-only (get-alex-price-data (asset-id (string-ascii 10)))
+  (match (map-get? price-feeds asset-id)
+    price-data
+      {
+        protocol: "ALEX",
+        asset-id: asset-id,
+        oracle-price: (get price price-data),
+        confidence: (get confidence price-data),
+        bitcoin-anchored: true,
+        validation-score: (get validation-score price-data),
+        amm-ready: (>= (get confidence price-data) u90),
+        slippage-protection: (get validation-score price-data),
+        trading-fee: u300,
+        last-update: (get last-update-timestamp price-data),
+        security-level: "bitcoin-grade"
+      }
+    {
+      protocol: "ALEX",
+      asset-id: asset-id,
+      oracle-price: u0,
+      confidence: u0,
+      bitcoin-anchored: false,
+      validation-score: u0,
+      amm-ready: false,
+      slippage-protection: u0,
+      trading-fee: u300,
+      last-update: u0,
+      security-level: "unavailable"
+    }
+  )
+)
+
+(define-read-only (get-velar-liquidity-data (asset-id (string-ascii 10)))
+  (match (map-get? price-feeds asset-id)
+    price-data
+      {
+        protocol: "Velar",
+        asset-id: asset-id,
+        spot-price: (get price price-data),
+        confidence: (get confidence price-data),
+        bitcoin-finality: (get is-finalized price-data),
+        leverage-available: (if (get is-finalized price-data) u150 u100),
+        liquidity-tier: (if (>= (get confidence price-data) u95) "premium" "standard"),
+        dharma-amm-ready: (and (get is-finalized price-data) (>= (get confidence price-data) u90)),
+        risk-score: (- u100 (get confidence price-data)),
+        last-anchor-block: (get bitcoin-anchor-block price-data),
+        security-guarantee: "bitcoin-backed"
+      }
+    {
+      protocol: "Velar",
+      asset-id: asset-id,
+      spot-price: u0,
+      confidence: u0,
+      bitcoin-finality: false,
+      leverage-available: u100,
+      liquidity-tier: "unavailable",
+      dharma-amm-ready: false,
+      risk-score: u100,
+      last-anchor-block: 0x00,
+      security-guarantee: "unavailable"
+    }
+  )
+)
+
+(define-read-only (get-hermetica-usdh-data (asset-id (string-ascii 10)))
+  (match (map-get? price-feeds asset-id)
+    price-data
+      (let (
+        (stability-factor (get confidence price-data))
+        (bitcoin-backing (get validation-score price-data))
+        (usdh-rate (if (is-eq asset-id "BTC") 
+                     (/ u100000000 (get price price-data))
+                     (get price price-data)))
+      )
+        {
+          protocol: "Hermetica",
+          asset-id: asset-id,
+          usdh-rate: usdh-rate,
+          stability-score: stability-factor,
+          bitcoin-backing: bitcoin-backing,
+          synthetic-ready: (>= stability-factor u92),
+          collateral-ratio: (+ u150 (/ bitcoin-backing u10)),
+          liquidation-threshold: u125,
+          interest-rate: (- u800 (/ bitcoin-backing u25)),
+          price-feed-source: "bitcoin-anchored-oracle",
+          risk-category: "low-risk"
+        }
+      )
+    {
+      protocol: "Hermetica",
+      asset-id: asset-id,
+      usdh-rate: u0,
+      stability-score: u0,
+      bitcoin-backing: u0,
+      synthetic-ready: false,
+      collateral-ratio: u150,
+      liquidation-threshold: u125,
+      interest-rate: u800,
+      price-feed-source: "unavailable",
+      risk-category: "high-risk"
+    }
+  )
 )
 
 ;; Demo function showing value proposition for partnerships
