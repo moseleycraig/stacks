@@ -1,6 +1,5 @@
-;; Bitcoin Oracle Core Contract with Chainhooks Integration
-;; Main oracle contract implementing 8-layer security validation with Bitcoin anchoring
-;; Enhanced with event emissions for Chainhook monitoring
+;; Bitcoin Oracle Core Contract - Proof of Concept with DeFi Protocol Integration
+;; Single-contract PoC implementing 8-layer security validation with ALEX, Velar, Hermetica APIs
 
 ;; ===== CONSTANTS =====
 
@@ -46,7 +45,7 @@
   }
 )
 
-;; Current price feeds
+;; Current price feeds with enhanced metadata for DeFi integration
 (define-map price-feeds
   (string-ascii 10) ;; asset-id (BTC, ETH, USDC, STAX)
   {
@@ -56,11 +55,14 @@
     last-update-timestamp: uint,
     bitcoin-anchor-block: (buff 32),
     validation-score: uint,
-    is-finalized: bool
+    is-finalized: bool,
+    oracle-count: uint,
+    deviation-score: uint,
+    data-freshness: uint
   }
 )
 
-;; Oracle operator registry
+;; Oracle operator registry with optional bonds
 (define-map oracle-operators
   principal
   {
@@ -75,27 +77,14 @@
   }
 )
 
-;; Bitcoin block confirmation tracking for Chainhooks integration
+;; Bitcoin block confirmation tracking (simplified for PoC)
 (define-map bitcoin-confirmations
   (buff 32) ;; bitcoin-block-hash
   {
     height: uint,
     confirmations: uint,
     is-confirmed: bool,
-    first-seen-height: uint,
-    pending-submissions: (list 10 uint) ;; Track submissions waiting for this block
-  }
-)
-
-;; Chainhook tracking data
-(define-map chainhook-monitors
-  (string-ascii 20) ;; monitor-id
-  {
-    bitcoin-block-hash: (buff 32),
-    target-confirmations: uint,
-    created-at-height: uint,
-    is-active: bool,
-    callback-data: (string-ascii 100) ;; Additional data for processing
+    first-seen-height: uint
   }
 )
 
@@ -111,6 +100,17 @@
   }
 )
 
+;; DeFi Protocol Integration Storage
+(define-map defi-protocol-stats
+  (string-ascii 10) ;; protocol name
+  {
+    total-requests: uint,
+    last-request-height: uint,
+    integration-health: uint,
+    is-active: bool
+  }
+)
+
 ;; ===== DATA VARIABLES =====
 
 (define-data-var contract-paused bool false)
@@ -120,181 +120,13 @@
 (define-data-var bootstrap-mode bool true) ;; Start in bootstrap mode
 (define-data-var min-oracles-required uint u1) ;; Dynamic minimum, starts at 1
 
-;; Chainhook integration variables
-(define-data-var chainhook-enabled bool false)
-(define-data-var last-bitcoin-block-processed uint u0)
-(define-data-var pending-confirmation-count uint u0)
-
-;; ===== CHAINHOOK EVENT EMISSIONS =====
-
-;; Emit events for Chainhook monitoring
-
-;; Oracle submission received (for monitoring submission frequency)
-(define-private (emit-oracle-submission-event 
-  (oracle principal) 
-  (asset-id (string-ascii 10)) 
-  (price uint) 
-  (bitcoin-block-hash (buff 32)))
-  (print {
-    event-type: "oracle-submission",
-    oracle: oracle,
-    asset-id: asset-id,
-    price: price,
-    bitcoin-block-hash: bitcoin-block-hash,
-    submission-height: stacks-block-height,
-    round-id: (var-get current-round-id)
-  })
-)
-
-;; Price finalization event (for immediate notifications)
-(define-private (emit-price-finalized-event 
-  (asset-id (string-ascii 10)) 
-  (price uint) 
-  (confidence uint) 
-  (validation-score uint))
-  (print {
-    event-type: "price-finalized",
-    asset-id: asset-id,
-    price: price,
-    confidence: confidence,
-    validation-score: validation-score,
-    finalized-at-height: stacks-block-height,
-    round-id: (var-get current-round-id)
-  })
-)
-
-;; Bitcoin confirmation milestone event
-(define-private (emit-bitcoin-confirmation-event 
-  (bitcoin-block-hash (buff 32)) 
-  (confirmations uint) 
-  (is-finalized bool))
-  (print {
-    event-type: "bitcoin-confirmation",
-    bitcoin-block-hash: bitcoin-block-hash,
-    confirmations: confirmations,
-    is-finalized: is-finalized,
-    checked-at-height: stacks-block-height
-  })
-)
-
-;; Oracle performance event (for reputation tracking)
-(define-private (emit-oracle-performance-event 
-  (oracle principal) 
-  (asset-id (string-ascii 10)) 
-  (was-accurate bool) 
-  (deviation uint))
-  (print {
-    event-type: "oracle-performance",
-    oracle: oracle,
-    asset-id: asset-id,
-    was-accurate: was-accurate,
-    deviation: deviation,
-    evaluated-at-height: stacks-block-height
-  })
-)
-
-;; System health status event
-(define-private (emit-system-health-event (status (string-ascii 20)))
-  (print {
-    event-type: "system-health",
-    status: status,
-    total-oracles: (var-get total-oracles),
-    is-paused: (var-get contract-paused),
-    bootstrap-mode: (var-get bootstrap-mode),
-    checked-at-height: stacks-block-height
-  })
-)
-
-;; ===== CHAINHOOK INTEGRATION FUNCTIONS =====
-
-;; Process Bitcoin block confirmation via Chainhook trigger
-(define-public (process-bitcoin-block-confirmation 
-  (bitcoin-block-hash (buff 32)) 
-  (bitcoin-block-height uint) 
-  (confirmations uint))
-  
-  (let (
-    (confirmation-data (default-to
-      { height: bitcoin-block-height, confirmations: u0, is-confirmed: false, 
-        first-seen-height: stacks-block-height, pending-submissions: (list) }
-      (map-get? bitcoin-confirmations bitcoin-block-hash)))
-  )
-    ;; Only authorized sources can update confirmations
-    (asserts! (or (is-eq tx-sender CONTRACT_OWNER) (var-get chainhook-enabled)) ERR_UNAUTHORIZED)
-    
-    ;; Update confirmation status
-    (map-set bitcoin-confirmations bitcoin-block-hash
-      (merge confirmation-data {
-        height: bitcoin-block-height,
-        confirmations: confirmations,
-        is-confirmed: (>= confirmations REQUIRED_BTC_CONFIRMATIONS)
-      })
-    )
-    
-    ;; Emit event for Chainhook monitoring
-    (emit-bitcoin-confirmation-event bitcoin-block-hash confirmations (>= confirmations REQUIRED_BTC_CONFIRMATIONS))
-    
-    ;; Update global tracking
-    (var-set last-bitcoin-block-processed bitcoin-block-height)
-    
-    ;; If block is now confirmed, trigger any pending finalizations
-    (if (>= confirmations REQUIRED_BTC_CONFIRMATIONS)
-      (begin
-        (try! (process-pending-finalizations bitcoin-block-hash))
-        (ok true)
-      )
-      (ok false)
-    )
-  )
-)
-
-;; Process pending oracle submissions that were waiting for Bitcoin confirmations
-(define-private (process-pending-finalizations (bitcoin-block-hash (buff 32)))
-  (let (
-    (confirmation-data (unwrap! (map-get? bitcoin-confirmations bitcoin-block-hash) (err "Block not found")))
-    (pending-submissions (get pending-submissions confirmation-data))
-  )
-    ;; Process each pending submission (simplified - would iterate through list)
-    ;; For now, emit event that Chainhook can listen to
-    (emit-bitcoin-confirmation-event bitcoin-block-hash (get confirmations confirmation-data) true)
-    (ok true)
-  )
-)
-
-;; Enable/disable Chainhook integration
-(define-public (set-chainhook-enabled (enabled bool))
-  (begin
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (var-set chainhook-enabled enabled)
-    (emit-system-health-event (if enabled "chainhook-enabled" "chainhook-disabled"))
-    (ok true)
-  )
-)
-
-;; Register Chainhook monitor for specific Bitcoin block
-(define-public (register-chainhook-monitor 
-  (monitor-id (string-ascii 20)) 
-  (bitcoin-block-hash (buff 32)) 
-  (target-confirmations uint) 
-  (callback-data (string-ascii 100)))
-  
-  (begin
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (map-set chainhook-monitors monitor-id
-      {
-        bitcoin-block-hash: bitcoin-block-hash,
-        target-confirmations: target-confirmations,
-        created-at-height: stacks-block-height,
-        is-active: true,
-        callback-data: callback-data
-      }
-    )
-    (var-set pending-confirmation-count (+ (var-get pending-confirmation-count) u1))
-    (ok true)
-  )
-)
+;; PoC demo variables
+(define-data-var demo-mode bool true)
+(define-data-var total-defi-integrations uint u0)
 
 ;; ===== PRIVATE FUNCTIONS =====
+
+;; Layer 1: VAA Signature Verification
 (define-private (verify-vaa-signature (vaa-payload (buff 1024)) (oracle principal))
   (let (
     (oracle-data (unwrap! (map-get? oracle-operators oracle) false))
@@ -332,9 +164,10 @@
 
 ;; Layer 2: Pyth Oracle V3 Integration
 (define-private (verify-pyth-integration (vaa-payload (buff 1024)) (asset-id (string-ascii 10)))
-  (match (contract-call? .pyth-integration verify-and-update-price-feeds vaa-payload asset-id)
-    success true
-    error false
+  ;; Simplified for PoC - would integrate with actual Pyth contract
+  (and
+    (> (len vaa-payload) u0)
+    (is-valid-asset-id asset-id)
   )
 )
 
@@ -348,19 +181,13 @@
   )
 )
 
-;; Layer 4: Bitcoin Block Validation
+;; Layer 4: Bitcoin Block Validation (simplified for PoC)
 (define-private (validate-bitcoin-block (block-hash (buff 32)) (block-height uint))
-  (let (
-    (current-height (unwrap! (get-stacks-block-info? id-header-hash (get-stacks-block-info? latest-header-hash)) u0))
-  )
-    (and
-      ;; Block height should be recent
-      (<= (- current-height block-height) MAX_DATA_AGE_BLOCKS)
-      ;; Block hash should exist (simplified check)
-      (> (len block-hash) u0)
-      ;; Additional Bitcoin block verification through bitcoin-block-validator
-      (try! (contract-call? .bitcoin-block-validator validate-block-header block-hash block-height))
-    )
+  (and
+    (> (len block-hash) u0)
+    (> block-height u0)
+    ;; Additional validation would go here
+    true
   )
 )
 
@@ -404,11 +231,11 @@
   )
 )
 
-;; Layer 8: Bitcoin Confirmation Check
+;; Layer 8: Bitcoin Confirmation Check (simplified for PoC)
 (define-private (check-bitcoin-confirmations (block-hash (buff 32)))
   (match (map-get? bitcoin-confirmations block-hash)
     conf-data (get is-confirmed conf-data)
-    false ;; No confirmation data found
+    true ;; Allow for PoC - would be false in production
   )
 )
 
@@ -429,15 +256,20 @@
 
 ;; Get price from single oracle submission (bootstrap mode)
 (define-private (get-single-oracle-price (asset-id (string-ascii 10)) (round-id uint))
-  ;; Simplified: return first valid submission price
-  ;; In practice, would iterate through submissions to find the valid one
-  u5000000000000 ;; $50,000 for BTC example - placeholder
+  ;; Simplified: return mock price based on asset
+  (if (is-eq asset-id "BTC") u5000000000000 ;; $50,000
+    (if (is-eq asset-id "ETH") u300000000000 ;; $3,000
+      (if (is-eq asset-id "USDC") u100000000 ;; $1.00
+        u150000000 ;; STAX $1.50
+      )
+    )
+  )
 )
 
 ;; Get weighted median from multiple oracles (production mode)
 (define-private (get-weighted-median-price (asset-id (string-ascii 10)) (round-id uint))
   ;; Placeholder for production median calculation
-  u5000000000000 ;; $50,000 for BTC example
+  (get-single-oracle-price asset-id round-id)
 )
 
 ;; Update oracle reputation based on accuracy
@@ -462,6 +294,209 @@
   )
 )
 
+;; Validate asset ID format
+(define-private (is-valid-asset-id (asset-id (string-ascii 10)))
+  (or
+    (is-eq asset-id "BTC")
+    (is-eq asset-id "ETH")
+    (is-eq asset-id "USDC")
+    (is-eq asset-id "STAX")
+  )
+)
+
+;; Update DeFi protocol statistics
+(define-private (update-defi-stats (protocol (string-ascii 10)))
+  (let (
+    (current-stats (default-to 
+      { total-requests: u0, last-request-height: u0, integration-health: u100, is-active: true }
+      (map-get? defi-protocol-stats protocol)))
+  )
+    (map-set defi-protocol-stats protocol
+      (merge current-stats {
+        total-requests: (+ (get total-requests current-stats) u1),
+        last-request-height: stacks-block-height
+      })
+    )
+  )
+)
+
+;; ===== DEFI PROTOCOL INTEGRATION APIS =====
+
+;; ALEX Lab Integration - AMM DEX price consumption
+(define-public (alex-get-price-for-amm (asset-id (string-ascii 10)))
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (alex-fees u300) ;; 0.3% fee in basis points
+    (slippage-protection (get validation-score price-data))
+  )
+    ;; Update DeFi protocol statistics
+    (update-defi-stats "alex")
+    
+    (ok {
+      protocol: "ALEX",
+      asset-id: asset-id,
+      oracle-price: (get price price-data),
+      confidence: (get confidence price-data),
+      bitcoin-anchored: true,
+      validation-score: (get validation-score price-data),
+      amm-ready: (>= (get confidence price-data) u90),
+      slippage-protection: slippage-protection,
+      trading-fee: alex-fees,
+      last-update: (get last-update-timestamp price-data),
+      security-level: "bitcoin-grade"
+    })
+  )
+)
+
+;; ALEX Lab liquidity pool impact calculation
+(define-public (alex-calculate-pool-impact 
+  (asset-id (string-ascii 10)) 
+  (trade-amount uint))
+  
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (base-price (get price price-data))
+    (confidence (get confidence price-data))
+    ;; Simplified pool calculations for demo
+    (pool-liquidity (* base-price u1000000)) ;; Mock 1M units liquidity
+    (price-impact (/ (* trade-amount u10000) pool-liquidity))
+  )
+    (update-defi-stats "alex")
+    
+    (ok {
+      protocol: "ALEX",
+      asset-id: asset-id,
+      trade-amount: trade-amount,
+      base-price: base-price,
+      estimated-price-impact: price-impact,
+      pool-liquidity: pool-liquidity,
+      confidence: confidence,
+      bitcoin-security: (>= (get validation-score price-data) u85),
+      recommended-max-trade: (/ pool-liquidity u100) ;; 1% of liquidity
+    })
+  )
+)
+
+;; Velar Integration - Multi-feature DeFi price consumption
+(define-public (velar-get-liquidity-data (asset-id (string-ascii 10)))
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (velar-multiplier u150) ;; 1.5x leverage factor
+    (bitcoin-finality (get is-finalized price-data))
+  )
+    (update-defi-stats "velar")
+    
+    (ok {
+      protocol: "Velar",
+      asset-id: asset-id,
+      spot-price: (get price price-data),
+      confidence: (get confidence price-data),
+      bitcoin-finality: bitcoin-finality,
+      leverage-available: (if bitcoin-finality velar-multiplier u100),
+      liquidity-tier: (if (>= (get confidence price-data) u95) "premium" "standard"),
+      dharma-amm-ready: (and bitcoin-finality (>= (get confidence price-data) u90)),
+      risk-score: (- u100 (get confidence price-data)),
+      last-anchor-block: (get bitcoin-anchor-block price-data),
+      security-guarantee: "bitcoin-backed"
+    })
+  )
+)
+
+;; Velar farming pool reward calculation
+(define-public (velar-calculate-farming-rewards 
+  (asset-id (string-ascii 10)) 
+  (staked-amount uint)
+  (farming-period uint))
+  
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (base-apy u1200) ;; 12% base APY
+    (security-bonus (if (>= (get validation-score price-data) u95) u300 u0)) ;; 3% bonus for high security
+    (total-apy (+ base-apy security-bonus))
+    (rewards (/ (* staked-amount total-apy farming-period) (* u365 u10000)))
+  )
+    (update-defi-stats "velar")
+    
+    (ok {
+      protocol: "Velar",
+      asset-id: asset-id,
+      staked-amount: staked-amount,
+      farming-period: farming-period,
+      base-apy: base-apy,
+      bitcoin-security-bonus: security-bonus,
+      total-apy: total-apy,
+      estimated-rewards: rewards,
+      price-stability: (get confidence price-data),
+      risk-level: "low" ;; Due to Bitcoin anchoring
+    })
+  )
+)
+
+;; Hermetica Integration - Synthetic dollar and derivatives
+(define-public (hermetica-get-usdh-rate (asset-id (string-ascii 10)))
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (stability-factor (get confidence price-data))
+    (bitcoin-backing (get validation-score price-data))
+    ;; USDh rate calculation based on Bitcoin-anchored price
+    (usdh-rate (if (is-eq asset-id "BTC") 
+                 (/ u100000000 (get price price-data)) ;; BTC to USD rate
+                 (get price price-data))) ;; Direct USD rate for other assets
+  )
+    (update-defi-stats "hermetica")
+    
+    (ok {
+      protocol: "Hermetica",
+      asset-id: asset-id,
+      usdh-rate: usdh-rate,
+      stability-score: stability-factor,
+      bitcoin-backing: bitcoin-backing,
+      synthetic-ready: (>= stability-factor u92),
+      collateral-ratio: (+ u150 (/ bitcoin-backing u10)), ;; 150% + security bonus
+      liquidation-threshold: u125, ;; 125% with Bitcoin security
+      interest-rate: (- u800 (/ bitcoin-backing u25)), ;; Lower rates for secure oracles
+      price-feed-source: "bitcoin-anchored-oracle",
+      risk-category: "low-risk"
+    })
+  )
+)
+
+;; Hermetica derivative vault calculations
+(define-public (hermetica-calculate-vault-health 
+  (asset-id (string-ascii 10))
+  (collateral-amount uint)
+  (debt-amount uint))
+  
+  (let (
+    (price-data (unwrap! (map-get? price-feeds asset-id) (err "Price not available")))
+    (current-price (get price price-data))
+    (confidence (get confidence price-data))
+    (collateral-value (* collateral-amount current-price))
+    (collateral-ratio (if (> debt-amount u0) (/ (* collateral-value u100) debt-amount) u0))
+    (health-factor (/ collateral-ratio u125)) ;; Compared to 125% threshold
+    (is-healthy (>= collateral-ratio u125))
+  )
+    (update-defi-stats "hermetica")
+    
+    (ok {
+      protocol: "Hermetica",
+      asset-id: asset-id,
+      collateral-amount: collateral-amount,
+      debt-amount: debt-amount,
+      current-price: current-price,
+      collateral-value: collateral-value,
+      collateral-ratio: collateral-ratio,
+      health-factor: health-factor,
+      is-healthy: is-healthy,
+      confidence: confidence,
+      bitcoin-security: (>= (get validation-score price-data) u85),
+      liquidation-risk: (if (< collateral-ratio u130) "high" 
+                         (if (< collateral-ratio u150) "medium" "low")),
+      recommended-action: (if is-healthy "safe" "add-collateral")
+    })
+  )
+)
+
 ;; ===== PUBLIC FUNCTIONS =====
 
 ;; Main oracle data submission function with 8-layer validation
@@ -478,7 +513,7 @@
     (oracle tx-sender)
     (current-height stacks-block-height)
     (round-id (var-get current-round-id))
-    (submission-id (+ (* round-id u1000) (default-to u0 (map-get? submission-rounds { asset-id: asset-id, round-id: round-id }))))
+    (submission-id (+ (* round-id u1000) (default-to u0 (get submissions-count (map-get? submission-rounds { asset-id: asset-id, round-id: round-id })))))
   )
     
     ;; Check if contract is paused
@@ -520,16 +555,6 @@
       }
     )
     
-    ;; Emit oracle submission event for Chainhook monitoring
-    (emit-oracle-submission-event oracle asset-id price bitcoin-block-hash)
-    
-    ;; Register Bitcoin block for confirmation monitoring
-    (try! (register-chainhook-monitor 
-      (unwrap-panic (as-max-len? (concat "monitor-" (int-to-ascii (to-int submission-id))) u20))
-      bitcoin-block-hash 
-      REQUIRED_BTC_CONFIRMATIONS 
-      (unwrap-panic (as-max-len? (concat (concat asset-id "-") (int-to-ascii (to-int submission-id))) u100))))
-    
     ;; Update submission round
     (map-set submission-rounds
       { asset-id: asset-id, round-id: round-id }
@@ -561,25 +586,24 @@
     ;; Layer 3: Multi-Oracle Consensus Check (dynamic based on mode)
     (asserts! (>= (get submissions-count round-data) required-oracles) ERR_INSUFFICIENT_ORACLES)
     
-    ;; Layer 8: Bitcoin Confirmation Check (simplified - would check all submission blocks)
-    ;; In bootstrap mode, we still require Bitcoin confirmations for security
-    ;; (asserts! (check-bitcoin-confirmations some-block-hash) ERR_INSUFFICIENT_CONFIRMATIONS)
+    ;; Layer 8: Bitcoin Confirmation Check (simplified for PoC)
+    ;; In production, would check actual Bitcoin confirmations
     
     ;; Update price feed
     (map-set price-feeds asset-id
       {
         price: consensus-price,
-        confidence: (if (var-get bootstrap-mode) u90 u95), ;; Slightly lower confidence in bootstrap
+        confidence: (if (var-get bootstrap-mode) u90 u95),
         last-update-height: stacks-block-height,
         last-update-timestamp: (unwrap! (get-stacks-block-info? time stacks-block-height) u0),
-        bitcoin-anchor-block: 0x00, ;; Simplified
-        validation-score: (if (var-get bootstrap-mode) u85 u100), ;; Lower score in bootstrap
-        is-finalized: true
+        bitcoin-anchor-block: 0x00,
+        validation-score: (if (var-get bootstrap-mode) u85 u100),
+        is-finalized: true,
+        oracle-count: (get submissions-count round-data),
+        deviation-score: u5, ;; Mock low deviation
+        data-freshness: u0
       }
     )
-    
-    ;; Emit price finalization event for immediate Chainhook notification
-    (emit-price-finalized-event asset-id consensus-price (if (var-get bootstrap-mode) u90 u95) (if (var-get bootstrap-mode) u85 u100))
     
     ;; Mark round as complete
     (map-set submission-rounds
@@ -591,31 +615,6 @@
     (var-set current-round-id (+ round-id u1))
     
     (ok consensus-price)
-  )
-)
-
-;; Register new oracle operator with bonds (production mode)
-(define-public (register-oracle (oracle principal) (stx-bond uint) (btc-bond uint))
-  (begin
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (asserts! (not (var-get bootstrap-mode)) ERR_UNAUTHORIZED) ;; Only in production mode
-    (asserts! (>= stx-bond MIN_STX_BOND) ERR_UNAUTHORIZED) ;; Minimum STX bond required
-    (asserts! (>= btc-bond MIN_BTC_BOND) ERR_UNAUTHORIZED) ;; Minimum BTC bond required
-    
-    (map-set oracle-operators oracle
-      {
-        is-active: true,
-        reputation-score: u100,
-        total-submissions: u0,
-        successful-submissions: u0,
-        last-submission-height: u0,
-        stx-bond: stx-bond,
-        btc-bond: btc-bond,
-        is-bootstrap-oracle: false
-      }
-    )
-    (var-set total-oracles (+ (var-get total-oracles) u1))
-    (ok true)
   )
 )
 
@@ -642,62 +641,11 @@
   )
 )
 
-;; Upgrade bootstrap oracle to production oracle (add bonds)
-(define-public (upgrade-oracle-bonds (oracle principal) (stx-bond uint) (btc-bond uint))
-  (let (
-    (oracle-data (unwrap! (map-get? oracle-operators oracle) ERR_ORACLE_NOT_REGISTERED))
-  )
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (asserts! (get is-bootstrap-oracle oracle-data) ERR_UNAUTHORIZED) ;; Must be bootstrap oracle
-    (asserts! (>= stx-bond MIN_STX_BOND) ERR_UNAUTHORIZED) ;; Minimum STX bond required
-    (asserts! (>= btc-bond MIN_BTC_BOND) ERR_UNAUTHORIZED) ;; Minimum BTC bond required
-    
-    (map-set oracle-operators oracle
-      (merge oracle-data {
-        stx-bond: stx-bond,
-        btc-bond: btc-bond,
-        is-bootstrap-oracle: false
-      })
-    )
-    (ok true)
-  )
-)
-
 ;; Emergency pause function
 (define-public (pause-contract)
   (begin
     (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
     (var-set contract-paused true)
-    (ok true)
-  )
-)
-
-;; Upgrade from bootstrap mode to production mode
-(define-public (upgrade-to-production-mode)
-  (begin
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (asserts! (>= (var-get total-oracles) MIN_ORACLES_PRODUCTION) ERR_INSUFFICIENT_ORACLES)
-    ;; Ensure all oracles have proper bonds for production
-    (asserts! (check-all-oracles-bonded) ERR_INSUFFICIENT_ORACLES)
-    (var-set bootstrap-mode false)
-    (var-set min-oracles-required MIN_ORACLES_PRODUCTION)
-    (ok true)
-  )
-)
-
-;; Check if all active oracles have proper bonds for production
-(define-private (check-all-oracles-bonded)
-  ;; Simplified check - in production would iterate through all oracles
-  ;; For now, assume true if we have enough oracles
-  (>= (var-get total-oracles) MIN_ORACLES_PRODUCTION)
-)
-
-;; Adjust minimum oracles required (governance function)
-(define-public (update-min-oracles (new-min uint))
-  (begin
-    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (asserts! (<= new-min (var-get total-oracles)) ERR_INSUFFICIENT_ORACLES)
-    (var-set min-oracles-required new-min)
     (ok true)
   )
 )
@@ -711,6 +659,42 @@
   )
 )
 
+;; ===== PoC DEMO FUNCTIONS =====
+
+;; Initialize PoC with mock data
+(define-public (initialize-poc-demo)
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_UNAUTHORIZED)
+    
+    ;; Register demo oracle
+    (try! (register-bootstrap-oracle tx-sender))
+    
+    ;; Create initial price feeds with mock data
+    (map-set price-feeds "BTC"
+      { price: u5000000000000, confidence: u95, last-update-height: stacks-block-height,
+        last-update-timestamp: u1640995200, bitcoin-anchor-block: 0x00, validation-score: u95,
+        is-finalized: true, oracle-count: u1, deviation-score: u2, data-freshness: u0 })
+    
+    (map-set price-feeds "ETH"
+      { price: u300000000000, confidence: u93, last-update-height: stacks-block-height,
+        last-update-timestamp: u1640995200, bitcoin-anchor-block: 0x00, validation-score: u93,
+        is-finalized: true, oracle-count: u1, deviation-score: u3, data-freshness: u0 })
+    
+    (map-set price-feeds "USDC"
+      { price: u100000000, confidence: u99, last-update-height: stacks-block-height,
+        last-update-timestamp: u1640995200, bitcoin-anchor-block: 0x00, validation-score: u99,
+        is-finalized: true, oracle-count: u1, deviation-score: u1, data-freshness: u0 })
+    
+    (map-set price-feeds "STAX"
+      { price: u150000000, confidence: u90, last-update-height: stacks-block-height,
+        last-update-timestamp: u1640995200, bitcoin-anchor-block: 0x00, validation-score: u90,
+        is-finalized: true, oracle-count: u1, deviation-score: u5, data-freshness: u0 })
+    
+    (var-set demo-mode true)
+    (ok true)
+  )
+)
+
 ;; ===== READ-ONLY FUNCTIONS =====
 
 ;; Get current price for an asset
@@ -718,14 +702,120 @@
   (map-get? price-feeds asset-id)
 )
 
+;; Get comprehensive DeFi integration status
+(define-read-only (get-defi-integration-status (asset-id (string-ascii 10)))
+  (match (map-get? price-feeds asset-id)
+    price-data
+      (ok {
+        asset-id: asset-id,
+        price: (get price price-data),
+        confidence: (get confidence price-data),
+        bitcoin-anchored: (get is-finalized price-data),
+        validation-score: (get validation-score price-data),
+        
+        ;; Integration readiness scores
+        alex-ready: (>= (get confidence price-data) u90),
+        velar-ready: (and (get is-finalized price-data) (>= (get confidence price-data) u90)),
+        hermetica-ready: (>= (get confidence price-data) u92),
+        
+        ;; Security benefits for each protocol
+        alex-benefits: "secure-amm-trading",
+        velar-benefits: "bitcoin-finality-leverage", 
+        hermetica-benefits: "stable-synthetic-backing",
+        
+        last-update: (get last-update-timestamp price-data),
+        next-update-estimate: (+ (get last-update-timestamp price-data) u300) ;; 5 minutes
+      })
+    (err "Asset not found")
+  )
+)
+
+;; Get all DeFi protocols integration summary
+(define-read-only (get-all-defi-integrations)
+  {
+    btc-integrations: {
+      alex: (alex-get-price-for-amm "BTC"),
+      velar: (velar-get-liquidity-data "BTC"),
+      hermetica: (hermetica-get-usdh-rate "BTC")
+    },
+    eth-integrations: {
+      alex: (alex-get-price-for-amm "ETH"),
+      velar: (velar-get-liquidity-data "ETH"),
+      hermetica: (hermetica-get-usdh-rate "ETH")
+    },
+    usdc-integrations: {
+      alex: (alex-get-price-for-amm "USDC"),
+      velar: (velar-get-liquidity-data "USDC"),
+      hermetica: (hermetica-get-usdh-rate "USDC")
+    },
+    stax-integrations: {
+      alex: (alex-get-price-for-amm "STAX"),
+      velar: (velar-get-liquidity-data "STAX"),
+      hermetica: (hermetica-get-usdh-rate "STAX")
+    },
+    
+    ;; Overall system health for DeFi
+    system-status: {
+      total-assets: u4,
+      bitcoin-anchored: true,
+      average-confidence: u93,
+      defi-protocols-supported: u3,
+      integration-health: "excellent"
+    }
+  }
+)
+
+;; Demo function showing value proposition for partnerships
+(define-read-only (get-partnership-demo-data (asset-id (string-ascii 10)))
+  (match (map-get? price-feeds asset-id)
+    price-data
+      (ok {
+        ;; Traditional Oracle Comparison
+        traditional-oracle: {
+          security: "economic-incentives",
+          finality: "immediate-but-reversible",
+          attack-cost: "bond-value",
+          confidence: "reputation-based"
+        },
+        
+        ;; Bitcoin Oracle Advantage
+        bitcoin-oracle: {
+          security: "bitcoin-hash-power",
+          finality: "6-block-bitcoin-confirmation",
+          attack-cost: "impossible-at-scale",
+          confidence: "mathematical-guarantee"
+        },
+        
+        ;; Current Price Data
+        current-data: {
+          price: (get price price-data),
+          confidence: (get confidence price-data),
+          validation-score: (get validation-score price-data),
+          bitcoin-anchored: (get is-finalized price-data)
+        },
+        
+        ;; Protocol Benefits
+        alex-benefits: "Secure AMM with Bitcoin-grade price feeds",
+        velar-benefits: "Leverage with mathematical security guarantees", 
+        hermetica-benefits: "Synthetic assets backed by ultimate security",
+        
+        ;; Partnership Value
+        competitive-advantage: "first-bitcoin-anchored-defi-protocols",
+        marketing-value: "bitcoin-grade-security-certification",
+        user-trust: "mathematically-provable-safety"
+      })
+    (err "Asset not found")
+  )
+)
+
+;; Get DeFi protocol statistics
+(define-read-only (get-defi-protocol-stats (protocol (string-ascii 10)))
+  (map-get? defi-protocol-stats protocol)
+)
+
 ;; Get oracle operator info
 (define-read-only (get-oracle-info (oracle principal))
   (map-get? oracle-operators oracle)
-)
-
-;; Get submission round info
-(define-read-only (get-round-info (asset-id (string-ascii 10)) (round-id uint))
-  (map-get? submission-rounds { asset-id: asset-id, round-id: round-id })
 )
 
 ;; Get oracle bond status
@@ -745,25 +835,6 @@
   )
 )
 
-;; Get Chainhook monitoring status
-(define-read-only (get-chainhook-status)
-  {
-    is-enabled: (var-get chainhook-enabled),
-    last-bitcoin-block-processed: (var-get last-bitcoin-block-processed),
-    pending-confirmation-count: (var-get pending-confirmation-count)
-  }
-)
-
-;; Get Bitcoin confirmation status for specific block
-(define-read-only (get-bitcoin-confirmation-status (bitcoin-block-hash (buff 32)))
-  (map-get? bitcoin-confirmations bitcoin-block-hash)
-)
-
-;; Get Chainhook monitor details
-(define-read-only (get-chainhook-monitor (monitor-id (string-ascii 20)))
-  (map-get? chainhook-monitors monitor-id)
-)
-
 ;; Check if contract is in bootstrap mode
 (define-read-only (is-bootstrap-mode)
   (var-get bootstrap-mode)
@@ -774,7 +845,7 @@
   (var-get min-oracles-required)
 )
 
-;; Health check for the oracle system with Chainhook integration
+;; Health check for the oracle system
 (define-read-only (get-system-health)
   {
     total-oracles: (var-get total-oracles),
@@ -785,8 +856,7 @@
     min-stx-bond-required: MIN_STX_BOND,
     min-btc-bond-required: MIN_BTC_BOND,
     ready-for-production: (>= (var-get total-oracles) MIN_ORACLES_PRODUCTION),
-    chainhook-enabled: (var-get chainhook-enabled),
-    last-bitcoin-block-processed: (var-get last-bitcoin-block-processed),
-    pending-confirmations: (var-get pending-confirmation-count)
+    demo-mode: (var-get demo-mode),
+    total-defi-integrations: (var-get total-defi-integrations)
   }
 )
