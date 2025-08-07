@@ -196,13 +196,11 @@
 )
 
 ;; Layer 4: Bitcoin Block Validation (simplified for PoC)
-(define-private (validate-bitcoin-block (block-hash (buff 32)) (btc-block-height uint))
+(define-private (validate-bitcoin-block (block-hash (buff 32)) (stacks-block-height uint))
   (and
-    (> (len block-hash) u0)                    ;; Bitcoin block hash exists
-    (> btc-block-height u0)                    ;; Bitcoin block height is valid
-    (> stacks-block-height u0)                 ;; Stacks block height is valid
-    ;; Optional: Check that Bitcoin and Stacks heights are reasonable
-    ;; (< btc-block-height (+ stacks-block-height u1000000)) ;; Some reasonable upper bound
+    (> (len block-hash) u0)
+    (> stacks-block-height u0)
+    ;; Additional validation would go here
     true
   )
 )
