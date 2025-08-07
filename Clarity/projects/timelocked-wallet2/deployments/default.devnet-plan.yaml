@@ -1,0 +1,46 @@
+---
+id: 0
+name: Devnet deployment
+network: devnet
+stacks-node: "http://localhost:20443"
+bitcoin-node: "http://devnet:devnet@localhost:18443"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: dispatch-call2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 4330
+            path: contracts/dispatch-call2.clar
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: locked-wallet-trait2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 3430
+            path: contracts/locked-wallet-trait2.clar
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: smart-claimant2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 7580
+            path: contracts/smart-claimant2.clar
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: static-call2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 2130
+            path: contracts/static-call2.clar
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: timelocked-wallet2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 13170
+            path: contracts/timelocked-wallet2.clar
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.1"
