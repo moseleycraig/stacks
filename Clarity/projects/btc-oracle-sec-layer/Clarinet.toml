@@ -10,13 +10,6 @@ path = 'contracts/bitcoin-oracle-core.clar'
 clarity_version = 3
 epoch = 3.1
 
-[contracts.bitcoin-oracle-storage]
-path = 'contracts/bitcoin-oracle-storage.clar'
-clarity_version = 3
-epoch = 3.1
-[repl.analysis]
-passes = ['check_checker']
-
 [repl.analysis.check_checker]
 strict = false
 trusted_sender = false
