@@ -10,7 +10,7 @@ plan:
       transactions:
         - contract-publish:
             contract-name: bitcoin-oracle-core
-            expected-sender: ST3BRAKR4HSHZWCRXVAH4WEZF2NFG5MKRNP00RH8V
+            expected-sender: ST3K8WFQP2T34F18PKVFBP4QG3Q3590BF3QTZH5RA
             cost: 40894
             path: contracts/bitcoin-oracle-core.clar
             anchor-block-only: true
