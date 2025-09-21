@@ -1,0 +1,10 @@
+Please create a .jpg image with these details:
+
+2000 pixel width and 1000 pixel height
+outer space backdrop with distant small stars in a midnight blue background (hex color #283747)
+faint orange planet (hex color #f5cba7) with faint white clouds swirling within the planet
+the Bitcoin logo superimposed over the middle of the planet in a deeper red/orange (#d35400) with a 300 pixel height but same proportions as the original logo
+white glow around the planet with a lens flare at the top of the planet
+the planet size is 550 pixels in diameter
+the planet is on the right half of the entire .jpg image
+
