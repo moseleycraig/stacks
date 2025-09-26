@@ -1,0 +1,17 @@
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            max-height: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 2rem;
+            margin-top: 80px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.1) 100%), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000"><defs><linearGradient id="space" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23000510"/><stop offset="30%" style="stop-color:%23001122"/><stop offset="70%" style="stop-color:%23002244"/><stop offset="100%" style="stop-color:%23003366"/></linearGradient><linearGradient id="ship" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23cccccc"/><stop offset="50%" style="stop-color:%23ffffff"/><stop offset="100%" style="stop-color:%23aaaaaa"/></linearGradient><radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:%2300aaff;stop-opacity:0.8"/><stop offset="70%" style="stop-color:%2000aaff;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%2300aaff;stop-opacity:0"/></radialGradient></defs><rect width="1800" height="1000" fill="url(%23space)"/><circle cx="150" cy="150" r="2" fill="%23ffffff" opacity="0.8"/><circle cx="300" cy="80" r="1.5" fill="%23ffffff" opacity="0.6"/><circle cx="250" cy="200" r="1" fill="%23ffffff" opacity="0.9"/><circle cx="400" cy="120" r="2" fill="%23ffffff" opacity="0.7"/><circle cx="180" cy="300" r="1.5" fill="%23ffffff" opacity="0.5"/><circle cx="350" cy="250" r="1" fill="%23ffffff" opacity="0.8"/><circle cx="120" cy="400" r="2" fill="%23ffffff" opacity="0.6"/><circle cx="280" cy="380" r="1.5" fill="%23ffffff" opacity="0.7"/><circle cx="450" cy="350" r="1" fill="%23ffffff" opacity="0.9"/><circle cx="80" cy="500" r="1.5" fill="%23ffffff" opacity="0.5"/><ellipse cx="200" cy="500" rx="180" ry="120" fill="url(%23glow)" opacity="0.3"/><path d="M 200 460 L 380 460 L 400 480 L 380 500 L 200 500 Z" fill="url(%23ship)" stroke="%23666666" stroke-width="2"/><rect x="220" y="470" width="140" height="20" fill="%23444444"/><rect x="240" y="475" width="100" height="10" fill="%2300aaff" opacity="0.6"/><circle cx="190" cy="480" r="8" fill="%2300aaff" opacity="0.8"/><circle cx="190" cy="480" r="12" fill="%2300aaff" opacity="0.3"/><path d="M 1200 400 L 1600 300 L 1700 350 L 1650 450 L 1250 500 Z" fill="%23333333" stroke="%23666666" stroke-width="3"/><rect x="1300" y="350" width="250" height="80" fill="%23444444"/><rect x="1320" y="370" width="50" height="40" fill="%2300aaff" opacity="0.7"/><rect x="1390" y="370" width="50" height="40" fill="%2300aaff" opacity="0.7"/><rect x="1460" y="370" width="50" height="40" fill="%2300aaff" opacity="0.7"/><circle cx="1550" cy="380" r="20" fill="%2300aaff" opacity="0.5"/><path d="M 1000 600 L 1400 550 L 1500 600 L 1450 700 L 1050 750 Z" fill="%23222222" stroke="%23555555" stroke-width="2"/><rect x="1100" y="580" width="300" height="100" fill="%23333333"/><rect x="1120" y="600" width="60" height="60" fill="%2300aaff" opacity="0.4"/><rect x="1200" y="600" width="60" height="60" fill="%2300aaff" opacity="0.4"/><rect x="1280" y="600" width="60" height="60" fill="%2300aaff" opacity="0.4"/></svg>');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
