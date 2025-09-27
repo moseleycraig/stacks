@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrations - Guardian Gateway</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Red Hat Display', sans-serif;
+            background-color: white;
+            color: #050217;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #050217;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #050217;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            opacity: 0.7;
+        }
+
+        .launch-app {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white !important;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .launch-app:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 170, 255, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 0;
+        }
+
+        .page-title {
+            font-family: 'Red Hat Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #050217;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .disclaimer {
+            background: #f8f9fa;
+            border-left: 4px solid #00aaff;
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 4rem;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #050217;
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .protocol-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .protocol-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .protocol-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .protocol-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #050217;
+        }
+
+        .protocol-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .protocol-description {
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .protocol-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00aaff;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #050217;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .api-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #00aaff, #0077cc);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 1rem;
+        }
+
+        .integration-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 0.75rem;
+        }
+
+        .status-text {
+            font-weight: 500;
+        }
+
+        .status-value {
+            margin-left: auto;
+            font-weight: 600;
+            color: #00aaff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .section-content {
+                padding: 1rem;
+            }
+
+            .protocol-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">Guardian Gateway</a>
+            <div class="nav-links">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#oracle">Oracle</a>
+                <a href="#integrations" class="active">Integrations</a>
+                <a href="#governance">Governance</a>
+            </div>
+            <a href="#app" class="launch-app">Launch App</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">DeFi Integrations</h1>
+            <p class="page-subtitle">Explore protocol partnerships and API connectivity options for Bitcoin-anchored price feeds</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            This is proposed content, which will change as web development, content and negotiations progress.
+        </div>
+
+        <!-- Protocol Integration Dashboard -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Protocol Integration Dashboard</div>
+                <div class="section-description">Real-time monitoring and analytics for all integrated DeFi protocols</div>
+            </div>
+            <div class="section-content">
+                <div class="protocol-grid">
+                    <div class="protocol-card">
+                        <div class="protocol-name">ALEX Lab</div>
+                        <div class="protocol-status">Active</div>
+                        <div class="protocol-description">AMM trading with Bitcoin-grade price feeds, slippage protection, and pool impact analysis</div>
+                        <div class="protocol-metrics">
+                            <div class="metric">
+                                <div class="metric-value">1,247</div>
+                                <div class="metric-label">API Calls Today</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">99.8%</div>
+                                <div class="metric-label">Uptime</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">2.3s</div>
+                                <div class="metric-label">Avg Response</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">$2.4M</div>
+                                <div class="metric-label">24h Volume</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="protocol-card">
+                        <div class="protocol-name">Velar</div>
+                        <div class="protocol-status">Active</div>
+                        <div class="protocol-description">Leverage trading with mathematical security guarantees, liquidity analytics, and farming rewards</div>
+                        <div class="protocol-metrics">
+                            <div class="metric">
+                                <div class="metric-value">892</div>
+                                <div class="metric-label">API Calls Today</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">99.9%</div>
+                                <div class="metric-label">Uptime</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1.8s</div>
+                                <div class="metric-label">Avg Response</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">$1.8M</div>
+                                <div class="metric-label">24h Volume</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="protocol-card">
+                        <div class="protocol-name">Hermetica</div>
+                        <div class="protocol-status">Active</div>
+                        <div class="protocol-description">Bitcoin-backed synthetic assets, USDh rate stability, and vault health monitoring</div>
+                        <div class="protocol-metrics">
+                            <div class="metric">
+                                <div class="metric-value">2,156</div>
+                                <div class="metric-label">API Calls Today</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">99.7%</div>
+                                <div class="metric-label">Uptime</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1.9s</div>
+                                <div class="metric-label">Avg Response</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">$3.1M</div>
+                                <div class="metric-label">24h Volume</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Active Protocols</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4,295</div>
+                        <div class="stat-label">Total API Calls Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">99.8%</div>
+                        <div class="stat-label">Overall Uptime</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$7.3M</div>
+                        <div class="stat-label">Total 24h Volume</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Management -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Integration Management</div>
+                <div class="section-description">Monitor and manage protocol connections and API performance</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">API Endpoints</div>
+                        <div class="feature-description">Documentation and testing interface for protocol developers</div>
+                        <ul class="feature-list">
+                            <li>REST API documentation</li>
+                            <li>WebSocket feed specifications</li>
+                            <li>Authentication protocols</li>
+                            <li>Rate limiting guidelines</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Integration Status</div>
+                        <div class="feature-description">Real-time health monitoring of protocol connections</div>
+                        <ul class="feature-list">
+                            <li>Connection status indicators</li>
+                            <li>Response time monitoring</li>
+                            <li>Error rate tracking</li>
+                            <li>Alert system for issues</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Usage Analytics</div>
+                        <div class="feature-description">Detailed analytics on API usage and performance</div>
+                        <ul class="feature-list">
+                            <li>Request volume trends</li>
+                            <li>Peak usage analysis</li>
+                            <li>Geographic distribution</li>
+                            <li>Performance optimization insights</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">SLA Monitoring</div>
+                        <div class="feature-description">Service level agreement tracking and compliance</div>
+                        <ul class="feature-list">
+                            <li>Uptime guarantees (99.9%)</li>
+                            <li>Response time commitments</li>
+                            <li>Data accuracy standards</li>
+                            <li>Incident response metrics</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="integration-status-grid">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <div class="status-text">API Health</div>
+                        <div class="status-value">Operational</div>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <div class="status-text">WebSocket Feeds</div>
+                        <div class="status-value">Active</div>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <div class="status-text">Rate Limiting</div>
+                        <div class="status-value">Normal</div>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <div class="status-text">Data Quality</div>
+                        <div class="status-value">95%+ Confidence</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Tools -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Developer Tools</div>
+                <div class="section-description">Comprehensive toolkit for protocol integration development</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Integration Wizard</div>
+                        <div class="feature-description">Step-by-step guide for seamless protocol integration</div>
+                        <ul class="feature-list">
+                            <li>Prerequisites checklist</li>
+                            <li>API key generation</li>
+                            <li>Testing environment setup</li>
+                            <li>Production deployment guide</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">API Testing Console</div>
+                        <div class="feature-description">Live testing interface for smart contract functions</div>
+                        <ul class="feature-list">
+                            <li>Real-time API testing</li>
+                            <li>Response validation</li>
+                            <li>Error debugging tools</li>
+                            <li>Performance benchmarking</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Code Examples</div>
+                        <div class="feature-description">Sample implementations for common integration patterns</div>
+                        <ul class="feature-list">
+                            <li>JavaScript/TypeScript SDKs</li>
+                            <li>Python integration examples</li>
+                            <li>Clarity smart contract calls</li>
+                            <li>WebSocket implementation guides</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">SDK Downloads</div>
+                        <div class="feature-description">Official development kits and libraries</div>
+                        <ul class="feature-list">
+                            <li>Guardian Gateway JS SDK</li>
+                            <li>Python API wrapper</li>
+                            <li>Clarity contract interfaces</li>
+                            <li>TypeScript definitions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>Sample API Integration</h3>
+                    <div class="code-block">
+// Guardian Gateway API Integration Example
+import { GuardianGateway } from '@guardian/sdk';
+
+const gg = new GuardianGateway({
+  apiKey: 'your-api-key',
+  network: 'mainnet'
+});
+
+// Get current price with confidence
+const btcPrice = await gg.getPrice('BTC');
+console.log(`BTC: ${btcPrice.price} (${btcPrice.confidence}% confidence)`);
+
+// Subscribe to real-time updates
+gg.subscribe('BTC', (update) => {
+  console.log('Price update:', update);
+});
+                    </div>
+                    <a href="#" class="btn-primary">Download SDK</a>
+                    <a href="#" class="btn-secondary">View Documentation</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partnership Program -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Partnership Program</div>
+                <div class="section-description">Join the Guardian Gateway ecosystem as an integration partner</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Integration Requirements</div>
+                        <div class="feature-description">Technical and security standards for partnership</div>
+                        <ul class="feature-list">
+                            <li>Smart contract security audit</li>
+                            <li>Minimum TVL requirements</li>
+                            <li>Technical integration standards</li>
+                            <li>Community reputation metrics</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Application Process</div>
+                        <div class="feature-description">How protocols can request Guardian Gateway integration</div>
+                        <ul class="feature-list">
+                            <li>Initial application submission</li>
+                            <li>Technical review process</li>
+                            <li>Security assessment phase</li>
+                            <li>Integration development support</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Benefits Overview</div>
+                        <div class="feature-description">Advantages and marketing benefits for partners</div>
+                        <ul class="feature-list">
+                            <li>Bitcoin-grade security certification</li>
+                            <li>Marketing co-promotion opportunities</li>
+                            <li>Priority technical support</li>
+                            <li>Ecosystem partnership benefits</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Success Stories</div>
+                        <div class="feature-description">Case studies from existing integrations</div>
+                        <ul class="feature-list">
+                            <li>ALEX Lab: 25% reduction in MEV attacks</li>
+                            <li>Velar: 99.9% liquidation accuracy</li>
+                            <li>Hermetica: Enhanced peg stability</li>
+                            <li>Overall ecosystem growth metrics</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Analytics -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Integration Analytics</div>
+                <div class="section-description">Performance metrics and impact analysis for integrated protocols</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Protocol Performance</div>
+                        <div class="feature-description">Impact of integration on price feed accuracy and reliability</div>
+                        <ul class="feature-list">
+                            <li>Price accuracy improvements</li>
+                            <li>Latency reduction metrics</li>
+                            <li>Error rate comparisons</li>
+                            <li>Security incident prevention</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Security Benefits</div>
+                        <div class="feature-description">Measurable security improvements through Bitcoin anchoring</div>
+                        <ul class="feature-list">
+                            <li>Attack prevention statistics</li>
+                            <li>Manipulation attempt blocking</li>
+                            <li>Confidence score improvements</li>
+                            <li>Risk reduction quantification</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">User Adoption</div>
+                        <div class="feature-description">Growth metrics and user engagement from integrations</div>
+                        <ul class="feature-list">
+                            <li>TVL growth post-integration</li>
+                            <li>User activity increases</li>
+                            <li>Transaction volume growth</li>
+                            <li>Protocol retention rates</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Revenue Impact</div>
+                        <div class="feature-description">Economic benefits and revenue sharing analysis</div>
+                        <ul class="feature-list">
+                            <li>Fee generation from integrations</li>
+                            <li>Protocol revenue increases</li>
+                            <li>Cost savings from security</li>
+                            <li>ROI analysis for partners</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-number">25%</div>
+                        <div class="stat-label">Average TVL Increase</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">99.7%</div>
+                        <div class="stat-label">Attack Prevention Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">40%</div>
+                        <div class="stat-label">User Confidence Boost</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15%</div>
+                        <div class="stat-label">Protocol Revenue Increase</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

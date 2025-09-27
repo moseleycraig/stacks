@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Governance - Guardian Gateway</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Red Hat Display', sans-serif;
+            background-color: white;
+            color: #050217;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #050217;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #050217;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            opacity: 0.7;
+        }
+
+        .launch-app {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white !important;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .launch-app:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 170, 255, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 0;
+        }
+
+        .page-title {
+            font-family: 'Red Hat Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #050217;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .disclaimer {
+            background: #f8f9fa;
+            border-left: 4px solid #00aaff;
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 4rem;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #050217;
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .governance-dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .governance-main {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        .governance-sidebar {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .token-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .token-stat {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00aaff;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        .proposal-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .proposal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .proposal-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .proposal-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .status-passed {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .proposal-description {
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .voting-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .vote-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .vote-count {
+            font-weight: 600;
+            color: #050217;
+        }
+
+        .vote-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .btn-vote {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn-vote:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 170, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #050217;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .treasury-card {
+            background: linear-gradient(135deg, #00aaff, #0077cc);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .treasury-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .treasury-label {
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .treasury-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .breakdown-item {
+            text-align: center;
+        }
+
+        .breakdown-value {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .breakdown-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #050217;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Red Hat Display', sans-serif;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #00aaff, #0077cc);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .section-content {
+                padding: 1rem;
+            }
+
+            .governance-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .token-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .voting-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">Guardian Gateway</a>
+            <div class="nav-links">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#oracle">Oracle</a>
+                <a href="#integrations">Integrations</a>
+                <a href="#governance" class="active">Governance</a>
+            </div>
+            <a href="#app" class="launch-app">Launch App</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Protocol Governance</h1>
+            <p class="page-subtitle">Participate in decentralized decision-making for the Guardian Gateway oracle protocol</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            This is proposed content, which will change as web development, content and negotiations progress.
+        </div>
+
+        <!-- Governance Token & Voting -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Governance Token & Voting</div>
+                <div class="section-description">Manage your GGOV tokens and participate in protocol governance</div>
+            </div>
+            <div class="section-content">
+                <div class="governance-dashboard">
+                    <div class="governance-main">
+                        <h3>Active Proposals</h3>
+                        
+                        <div class="proposal-card">
+                            <div class="proposal-header">
+                                <div>
+                                    <div class="proposal-title">GGP-001: Reduce Oracle Bond Requirements</div>
+                                    <div class="proposal-status status-active">Active</div>
+                                </div>
+                            </div>
+                            <div class="proposal-description">
+                                Proposal to reduce minimum STX bond requirements from 10,000 STX to 5,000 STX for oracle operators to increase network participation while maintaining security.
+                            </div>
+                            <div class="voting-info">
+                                <div class="vote-stat">
+                                    <div class="vote-count">67%</div>
+                                    <div class="vote-label">For</div>
+                                </div>
+                                <div class="vote-stat">
+                                    <div class="vote-count">23%</div>
+                                    <div class="vote-label">Against</div>
+                                </div>
+                                <div class="vote-stat">
+                                    <div class="vote-count">2d 14h</div>
+                                    <div class="vote-label">Remaining</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 67%"></div>
+                            </div>
+                            <button class="btn-vote">Vote For</button>
+                            <button class="btn-vote" style="background: #dc3545;">Vote Against</button>
+                            <button class="btn-secondary">View Details</button>
+                        </div>
+
+                        <div class="proposal-card">
+                            <div class="proposal-header">
+                                <div>
+                                    <div class="proposal-title">GGP-002: ALEX Lab Fee Structure Update</div>
+                                    <div class="proposal-status status-pending">Pending</div>
+                                </div>
+                            </div>
+                            <div class="proposal-description">
+                                Adjust integration fee structure for ALEX Lab to support protocol development while maintaining competitive pricing for AMM operations.
+                            </div>
+                            <div class="voting-info">
+                                <div class="vote-stat">
+                                    <div class="vote-count">-</div>
+                                    <div class="vote-label">Voting starts in 18h</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary">View Proposal</button>
+                        </div>
+
+                        <div class="proposal-card">
+                            <div class="proposal-header">
+                                <div>
+                                    <div class="proposal-title">GGP-003: Emergency Oracle Override Protocol</div>
+                                    <div class="proposal-status status-passed">Passed</div>
+                                </div>
+                            </div>
+                            <div class="proposal-description">
+                                Implement emergency override mechanisms for oracle operations during critical security events while maintaining decentralized oversight.
+                            </div>
+                            <div class="voting-info">
+                                <div class="vote-stat">
+                                    <div class="vote-count">89%</div>
+                                    <div class="vote-label">Approval</div>
+                                </div>
+                                <div class="vote-stat">
+                                    <div class="vote-count">72%</div>
+                                    <div class="vote-label">Turnout</div>
+                                </div>
+                                <div class="vote-stat">
+                                    <div class="vote-count">Implemented</div>
+                                    <div class="vote-label">Status</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="governance-sidebar">
+                        <h4>Your Governance Status</h4>
+                        <div class="token-stats">
+                            <div class="token-stat">
+                                <div class="stat-value">2,450</div>
+                                <div class="stat-label">GGOV Balance</div>
+                            </div>
+                            <div class="token-stat">
+                                <div class="stat-value">1,800</div>
+                                <div class="stat-label">Staked Tokens</div>
+                            </div>
+                            <div class="token-stat">
+                                <div class="stat-value">3.2%</div>
+                                <div class="stat-label">Voting Power</div>
+                            </div>
+                            <div class="token-stat">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Proposals Voted</div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Delegation Available:</strong> You can delegate your voting power to trusted community members for proposals you don't wish to vote on directly.
+                        </div>
+
+                        <button class="btn-primary" style="width: 100%; margin-top: 1rem;">Stake More GGOV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Parameter Management -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Protocol Parameter Management</div>
+                <div class="section-description">Community governance over critical protocol settings and security parameters</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Oracle Configuration</div>
+                        <div class="feature-description">Governance over oracle network settings and requirements</div>
+                        <ul class="feature-list">
+                            <li>Minimum oracle count adjustments</li>
+                            <li>Bond amount modifications</li>
+                            <li>Confidence threshold settings</li>
+                            <li>Reputation scoring parameters</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Security Parameters</div>
+                        <div class="feature-description">Critical security settings for the 8-layer validation system</div>
+                        <ul class="feature-list">
+                            <li>Validation layer configuration</li>
+                            <li>Price deviation limits</li>
+                            <li>Bitcoin confirmation requirements</li>
+                            <li>Time window validations</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Fee Structure</div>
+                        <div class="feature-description">Economic parameters and incentive mechanisms</div>
+                        <ul class="feature-list">
+                            <li>Protocol fee adjustments</li>
+                            <li>Oracle reward distribution</li>
+                            <li>Penalty mechanism tuning</li>
+                            <li>Integration pricing models</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Integration Approvals</div>
+                        <div class="feature-description">Community voting on new protocol partnerships</div>
+                        <ul class="feature-list">
+                            <li>New protocol integration reviews</li>
+                            <li>Partnership term approvals</li>
+                            <li>Revenue sharing agreements</li>
+                            <li>Integration priority voting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treasury Management -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Treasury Management</div>
+                <div class="section-description">Community governance over protocol funds and resource allocation</div>
+            </div>
+            <div class="section-content">
+                <div class="treasury-card">
+                    <div class="treasury-amount">$2.4M</div>
+                    <div class="treasury-label">Total Treasury Balance</div>
+                    <div class="treasury-breakdown">
+                        <div class="breakdown-item">
+                            <div class="breakdown-value">$1.2M</div>
+                            <div class="breakdown-label">Development Fund</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-value">$800K</div>
+                            <div class="breakdown-label">Emergency Reserve</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-value">$400K</div>
+                            <div class="breakdown-label">Community Grants</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Budget Allocation</div>
+                        <div class="feature-description">Community decisions on fund distribution and spending priorities</div>
+                        <ul class="feature-list">
+                            <li>Development team funding</li>
+                            <li>Marketing and growth initiatives</li>
+                            <li>Security audit financing</li>
+                            <li>Infrastructure investments</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Grant Programs</div>
+                        <div class="feature-description">Community funding for ecosystem development and innovation</div>
+                        <ul class="feature-list">
+                            <li>Developer grant applications</li>
+                            <li>Research project funding</li>
+                            <li>Community tool development</li>
+                            <li>Educational content creation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Emergency Fund</div>
+                        <div class="feature-description">Reserve funds for critical incidents and system recovery</div>
+                        <ul class="feature-list">
+                            <li>Security incident response</li>
+                            <li>Oracle failure compensation</li>
+                            <li>Critical bug bounties</li>
+                            <li>Emergency development work</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Revenue Tracking</div>
+                        <div class="feature-description">Transparent tracking of protocol revenue and fee generation</div>
+                        <ul class="feature-list">
+                            <li>Integration fee collection</li>
+                            <li>Oracle bond interest earnings</li>
+                            <li>Partnership revenue sharing</li>
+                            <li>Treasury yield generation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proposal Creation -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Proposal Creation</div>
+                <div class="section-description">Submit new governance proposals for community consideration</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Proposal Requirements</div>
+                        <div class="feature-description">Minimum requirements for proposal submission</div>
+                        <ul class="feature-list">
+                            <li>Minimum 1,000 GGOV tokens</li>
+                            <li>Technical specification document</li>
+                            <li>Impact assessment analysis</li>
+                            <li>Community discussion period</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Proposal Templates</div>
+                        <div class="feature-description">Pre-formatted proposals for common governance actions</div>
+                        <ul class="feature-list">
+                            <li>Parameter adjustment proposals</li>
+                            <li>Integration approval requests</li>
+                            <li>Treasury spending proposals</li>
+                            <li>Emergency action proposals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Submit New Proposal</h3>
+                    <div class="alert alert-warning">
+                        <strong>Requirements:</strong> You need at least 1,000 GGOV tokens to submit a proposal. Current balance: 2,450 GGOV.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Proposal Type</label>
+                        <select class="form-select">
+                            <option>Parameter Adjustment</option>
+                            <option>Integration Approval</option>
+                            <option>Treasury Spending</option>
+                            <option>Emergency Action</option>
+                            <option>Custom Proposal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Proposal Title</label>
+                        <input type="text" class="form-input" placeholder="Enter proposal title...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Proposal Description</label>
+                        <textarea class="form-textarea" placeholder="Detailed description of the proposed changes..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Voting Duration</label>
+                        <select class="form-select">
+                            <option>3 Days</option>
+                            <option>7 Days</option>
+                            <option>14 Days</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-primary">Submit Proposal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Governance -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Community Governance</div>
+                <div class="section-description">Decentralized governance mechanisms for community-driven decisions</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Oracle Operator Elections</div>
+                        <div class="feature-description">Community selection and approval of trusted oracle operators</div>
+                        <ul class="feature-list">
+                            <li>Operator nomination process</li>
+                            <li>Community vetting procedures</li>
+                            <li>Performance-based elections</li>
+                            <li>Term limit governance</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Dispute Resolution</div>
+                        <div class="feature-description">Community mechanisms for resolving oracle performance issues</div>
+                        <ul class="feature-list">
+                            <li>Performance dispute filing</li>
+                            <li>Community arbitration process</li>
+                            <li>Evidence review procedures</li>
+                            <li>Resolution enforcement</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Slashing Decisions</div>
+                        <div class="feature-description">Community oversight of oracle penalty enforcement</div>
+                        <ul class="feature-list">
+                            <li>Slashing event review</li>
+                            <li>Penalty amount decisions</li>
+                            <li>Appeal process governance</li>
+                            <li>Operator rehabilitation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Partnership Governance</div>
+                        <div class="feature-description">Community decisions on protocol partnerships and integrations</div>
+                        <ul class="feature-list">
+                            <li>Partnership proposal reviews</li>
+                            <li>Integration priority voting</li>
+                            <li>Revenue sharing approvals</li>
+                            <li>Strategic alliance decisions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">89%</div>
+                        <div class="stat-desc">Community Participation Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">47</div>
+                        <div class="stat-desc">Proposals Voted This Month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12,450</div>
+                        <div class="stat-desc">Active GGOV Holders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$2.4M</div>
+                        <div class="stat-desc">Community Treasury Value</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

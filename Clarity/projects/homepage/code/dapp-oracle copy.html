@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle - Guardian Gateway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Red Hat Display', sans-serif;
+            background-color: white;
+            color: #050217;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #050217;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #050217;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            opacity: 0.7;
+        }
+
+        .launch-app {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white !important;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .launch-app:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 170, 255, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 0;
+        }
+
+        .page-title {
+            font-family: 'Red Hat Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #050217;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .disclaimer {
+            background: #f8f9fa;
+            border-left: 4px solid #00aaff;
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 4rem;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #050217;
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #050217;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .feature-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #00aaff, #0077cc);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #050217;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00aaff, #0077cc);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .section-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">Guardian Gateway</a>
+            <div class="nav-links">
+                <a href="#dashboard">Dashboard</a>
+                <a href="#oracle" class="active">Oracle</a>
+                <a href="#integrations">Integrations</a>
+                <a href="#governance">Governance</a>
+            </div>
+            <a href="#app" class="launch-app">Launch App</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Oracle</h1>
+            <p class="page-subtitle">Become part of the Guardian Gateway network and help secure Bitcoin-anchored price feeds for DeFi protocols</p>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            This is proposed content, which will change as web development, content and negotiations progress.
+        </div>
+
+        <!-- Oracle Operations Panel -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Oracle Operations Panel</div>
+                <div class="section-description">Core functionality for oracle operators and system administration</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Submit Price Data</div>
+                        <div class="feature-description">Interface for oracle operators to submit validated price feeds with 8-layer verification</div>
+                        <ul class="feature-list">
+                            <li>Asset selection (BTC, ETH, USDC, STX)</li>
+                            <li>Real-time confidence scoring</li>
+                            <li>Bitcoin block hash references</li>
+                            <li>VAA payload validation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Oracle Registration</div>
+                        <div class="feature-description">Complete registration process for new oracle operators</div>
+                        <ul class="feature-list">
+                            <li>Bond staking requirements</li>
+                            <li>Identity verification</li>
+                            <li>Technical requirements check</li>
+                            <li>Bootstrap program eligibility</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Bond Management</div>
+                        <div class="feature-description">Manage STX and BTC bond requirements and status</div>
+                        <ul class="feature-list">
+                            <li>Current bond status</li>
+                            <li>Staking/unstaking interface</li>
+                            <li>Penalty tracking</li>
+                            <li>Reward calculations</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Performance Dashboard</div>
+                        <div class="feature-description">Track oracle accuracy, uptime, and reputation scores</div>
+                        <ul class="feature-list">
+                            <li>Accuracy percentage</li>
+                            <li>Uptime monitoring</li>
+                            <li>Reputation scoring</li>
+                            <li>Reward history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Quick Oracle Registration</h3>
+                    <div class="alert alert-warning">
+                        <strong>Bootstrap Mode:</strong> Currently operating with reduced bond requirements for early oracle operators.
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Oracle Address</label>
+                            <input type="text" class="form-input" placeholder="SP1ABC..." readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">STX Bond Amount</label>
+                            <input type="number" class="form-input" placeholder="1,000 STX (Bootstrap)" min="1000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">BTC Bond Amount</label>
+                            <input type="number" class="form-input" placeholder="0.01 BTC (Bootstrap)" min="0.01" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Oracle Type</label>
+                            <select class="form-select">
+                                <option>Bootstrap Oracle</option>
+                                <option>Production Oracle</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-primary">Register as Oracle Operator</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Status Monitor -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Validation Status Monitor</div>
+                <div class="section-description">Real-time tracking of the 8-layer validation process</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">8-Layer Validation Tracker</div>
+                        <div class="feature-description">Monitor real-time progress through all validation layers</div>
+                        <ul class="feature-list">
+                            <li>VAA Signature Verification</li>
+                            <li>Pyth Oracle Integration</li>
+                            <li>Multi-Oracle Consensus</li>
+                            <li>Bitcoin Block Validation</li>
+                            <li>Confidence Score Analysis</li>
+                            <li>Time-Window Validation</li>
+                            <li>Price Deviation Limits</li>
+                            <li>Bitcoin Confirmation Wait</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Bitcoin Block Confirmation</div>
+                        <div class="feature-description">Track Bitcoin network confirmations and block references</div>
+                        <ul class="feature-list">
+                            <li>Current confirmation count</li>
+                            <li>Required confirmations (6)</li>
+                            <li>Block hash verification</li>
+                            <li>Timestamp validation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Consensus Round Status</div>
+                        <div class="feature-description">Active submission rounds and participation tracking</div>
+                        <ul class="feature-list">
+                            <li>Current round ID</li>
+                            <li>Participating oracles</li>
+                            <li>Submission deadline</li>
+                            <li>Consensus progress</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">98.7%</div>
+                        <div class="stat-label">Validation Success Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Required BTC Confirmations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">5.2 min</div>
+                        <div class="stat-label">Average Processing Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">144</div>
+                        <div class="stat-label">Rounds Completed Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oracle Network Overview -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Oracle Network Overview</div>
+                <div class="section-description">Complete view of the Guardian Gateway oracle network status</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Active Oracles</div>
+                        <div class="feature-description">Registry of all active oracle operators and their status</div>
+                        <ul class="feature-list">
+                            <li>Oracle addresses and identities</li>
+                            <li>Bond amounts and status</li>
+                            <li>Performance ratings</li>
+                            <li>Last submission times</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Network Health</div>
+                        <div class="feature-description">Overall system performance and reliability metrics</div>
+                        <ul class="feature-list">
+                            <li>System uptime percentage</li>
+                            <li>Average response times</li>
+                            <li>Error rates and issues</li>
+                            <li>Network congestion status</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Operating Mode</div>
+                        <div class="feature-description">Current operational mode and requirements</div>
+                        <div class="alert alert-info">
+                            <strong>Current Mode:</strong> Bootstrap Mode - Single oracle operation enabled with reduced bond requirements for early testing and development.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Emergency Controls</div>
+                        <div class="feature-description">System administration and emergency functions</div>
+                        <ul class="feature-list">
+                            <li>Pause/Resume protocol</li>
+                            <li>Emergency oracle override</li>
+                            <li>Parameter adjustments</li>
+                            <li>Incident response tools</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oracle Analytics -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">Oracle Analytics</div>
+                <div class="section-description">Comprehensive analytics and performance tracking</div>
+            </div>
+            <div class="section-content">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-title">Submission History</div>
+                        <div class="feature-description">Historical data on oracle submissions and validation results</div>
+                        <ul class="feature-list">
+                            <li>Submission timestamps</li>
+                            <li>Validation outcomes</li>
+                            <li>Price accuracy analysis</li>
+                            <li>Consensus participation</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Accuracy Tracking</div>
+                        <div class="feature-description">Performance metrics and reputation scoring system</div>
+                        <ul class="feature-list">
+                            <li>Accuracy percentage trends</li>
+                            <li>Reputation score evolution</li>
+                            <li>Peer comparison analysis</li>
+                            <li>Improvement recommendations</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Reward/Penalty Summary</div>
+                        <div class="feature-description">Economic incentives and penalty enforcement tracking</div>
+                        <ul class="feature-list">
+                            <li>Earned rewards breakdown</li>
+                            <li>Penalty history and reasons</li>
+                            <li>Bond slashing events</li>
+                            <li>Net economic performance</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-title">Market Impact Analysis</div>
+                        <div class="feature-description">Analysis of price validation effectiveness and market impact</div>
+                        <ul class="feature-list">
+                            <li>Price deviation detection</li>
+                            <li>Market volatility correlation</li>
+                            <li>Validation effectiveness metrics</li>
+                            <li>DeFi protocol impact assessment</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
