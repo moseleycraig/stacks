@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Port Authority - Bitcoin Oracle Protocol</title>
+    <title>Guardian Gateway - Bitcoin Oracle Protocol</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -15,14 +16,13 @@
         }
 
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Red Hat Display', sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
             color: white;
             min-height: 100vh;
             line-height: 1.6;
         }
 
-        /* Header */
         .header {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -65,7 +65,7 @@
 
         .nav-links a:hover, .nav-links a.active {
             opacity: 1;
-            color: #00aaff;
+            color: #FF3300;
         }
 
         .wallet-connect {
@@ -77,7 +77,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Red Hat Display', sans-serif;
         }
 
         .wallet-connect:hover {
@@ -89,7 +89,6 @@
             background: linear-gradient(45deg, #28a745, #20c997);
         }
 
-        /* Main Container */
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -100,7 +99,6 @@
             min-height: calc(100vh - 100px);
         }
 
-        /* Left Panel - Oracle Dashboard */
         .oracle-dashboard {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -129,7 +127,6 @@
             font-size: 0.9rem;
         }
 
-        /* Price Feeds Grid */
         .price-feeds-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -203,7 +200,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Network Status */
         .network-status {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -234,7 +230,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Right Panel - Oracle Operations */
         .oracle-operations {
             display: flex;
             flex-direction: column;
@@ -265,7 +260,6 @@
             line-height: 1.5;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             margin-bottom: 2rem;
@@ -281,7 +275,7 @@
             background: none;
             border: none;
             color: white;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Red Hat Display', sans-serif;
             font-weight: 500;
             cursor: pointer;
             border-radius: 8px;
@@ -298,7 +292,6 @@
             opacity: 0.8;
         }
 
-        /* Form Elements */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -317,7 +310,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             color: white;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Red Hat Display', sans-serif;
             font-size: 1rem;
             transition: all 0.3s ease;
         }
@@ -337,7 +330,6 @@
             color: white;
         }
 
-        /* Buttons */
         .btn-primary {
             width: 100%;
             padding: 1rem 2rem;
@@ -345,7 +337,7 @@
             border: none;
             border-radius: 12px;
             color: white;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Red Hat Display', sans-serif;
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
@@ -364,17 +356,6 @@
             box-shadow: none;
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
-        }
-
-        /* Oracle Submission Form */
         .submission-form {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -385,7 +366,6 @@
             grid-column: 1 / -1;
         }
 
-        /* Transaction History */
         .transaction-item {
             display: flex;
             justify-content: space-between;
@@ -416,6 +396,16 @@
             opacity: 0.6;
         }
 
+        .transaction-link {
+            color: #00aaff;
+            font-size: 0.75rem;
+            text-decoration: none;
+        }
+
+        .transaction-link:hover {
+            text-decoration: underline;
+        }
+
         .transaction-status {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -435,7 +425,6 @@
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
-        /* Validation Layers Visualization */
         .validation-layers {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -454,7 +443,6 @@
             font-size: 0.8rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         .validation-layer.passed {
@@ -475,7 +463,6 @@
             50% { opacity: 0.6; }
         }
 
-        /* Oracle Operator Registration */
         .bond-requirements {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -504,7 +491,6 @@
             color: #00aaff;
         }
 
-        /* DeFi Integration Panel */
         .integration-grid {
             display: grid;
             gap: 1rem;
@@ -568,61 +554,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 0 1rem;
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .nav-links {
-                gap: 1rem;
-            }
-
-            .main-container {
-                padding: 1rem;
-            }
-
-            .price-feeds-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .submission-form {
-                grid-template-columns: 1fr;
-            }
-
-            .status-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .validation-layers {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav-links {
-                display: none;
-            }
-
-            .dashboard-title {
-                font-size: 1.5rem;
-            }
-
-            .operation-title {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* Loading States */
         .loading {
             display: inline-block;
             width: 20px;
@@ -637,7 +568,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Success/Error Messages */
         .message {
             padding: 1rem;
             border-radius: 8px;
@@ -662,13 +592,40 @@
             color: #ffc107;
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .price-feeds-grid {
+                grid-template-columns: 1fr;
+            }
+            .submission-form {
+                grid-template-columns: 1fr;
+            }
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            .validation-layers {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
+
 <body>
-    <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="#" class="logo">Port Authority</a>
+            <a href="#" class="logo">Guardian Gateway</a>
             <div class="nav-links">
                 <a href="#dashboard" class="active">Dashboard</a>
                 <a href="#oracle">Oracle</a>
@@ -681,16 +638,13 @@
         </nav>
     </header>
 
-    <!-- Main Container -->
     <div class="main-container">
-        <!-- Left Panel - Oracle Dashboard -->
         <div class="oracle-dashboard">
             <div class="dashboard-header">
                 <h1 class="dashboard-title">Oracle Dashboard</h1>
                 <p class="dashboard-subtitle">Real-time Bitcoin-anchored price feeds with 8-layer validation</p>
             </div>
 
-            <!-- Price Feeds Grid -->
             <div class="price-feeds-grid">
                 <div class="price-feed-card">
                     <div class="asset-header">
@@ -741,7 +695,6 @@
                 </div>
             </div>
 
-            <!-- Network Status -->
             <div class="network-status">
                 <h3 style="margin-bottom: 1rem; font-weight: 600;">Network Status</h3>
                 <div class="status-grid">
@@ -761,23 +714,19 @@
             </div>
         </div>
 
-        <!-- Right Panel - Oracle Operations -->
         <div class="oracle-operations">
-            <!-- Oracle Submission Card -->
             <div class="operation-card">
                 <div class="operation-header">
                     <h2 class="operation-title">Oracle Operations</h2>
                     <p class="operation-description">Submit price data, manage oracle operations, and monitor validation status</p>
                 </div>
 
-                <!-- Tabs -->
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('submit')">Submit Data</button>
                     <button class="tab" onclick="switchTab('register')">Register Oracle</button>
                     <button class="tab" onclick="switchTab('history')">History</button>
                 </div>
 
-                <!-- Submit Data Tab -->
                 <div id="submit-tab" class="tab-content">
                     <div class="message warning">
                         <strong>Bootstrap Mode:</strong> Currently operating with reduced requirements for early testing.
@@ -815,7 +764,6 @@
                         </div>
                     </div>
 
-                    <!-- 8-Layer Validation Visualization -->
                     <div style="margin: 2rem 0;">
                         <h4 style="margin-bottom: 1rem; font-weight: 600;">8-Layer Validation Progress</h4>
                         <div class="validation-layers">
@@ -838,7 +786,6 @@
                     </button>
                 </div>
 
-                <!-- Register Oracle Tab -->
                 <div id="register-tab" class="tab-content" style="display: none;">
                     <div class="message warning">
                         <strong>Bootstrap Program:</strong> Reduced bond requirements for early oracle operators.
@@ -886,7 +833,6 @@
                     </button>
                 </div>
 
-                <!-- Transaction History Tab -->
                 <div id="history-tab" class="tab-content" style="display: none;">
                     <div id="transaction-history">
                         <div class="transaction-item">
@@ -896,47 +842,14 @@
                             </div>
                             <div class="transaction-status status-pending">Validating</div>
                         </div>
-
-                        <div class="transaction-item">
-                            <div class="transaction-details">
-                                <div class="transaction-type">Price Submission - ETH</div>
-                                <div class="transaction-time">15 minutes ago</div>
-                            </div>
-                            <div class="transaction-status status-confirmed">Confirmed</div>
-                        </div>
-
-                        <div class="transaction-item">
-                            <div class="transaction-details">
-                                <div class="transaction-type">Oracle Registration</div>
-                                <div class="transaction-time">2 hours ago</div>
-                            </div>
-                            <div class="transaction-status status-confirmed">Confirmed</div>
-                        </div>
-
-                        <div class="transaction-item">
-                            <div class="transaction-details">
-                                <div class="transaction-type">Price Submission - USDC</div>
-                                <div class="transaction-time">3 hours ago</div>
-                            </div>
-                            <div class="transaction-status status-confirmed">Confirmed</div>
-                        </div>
-
-                        <div class="transaction-item">
-                            <div class="transaction-details">
-                                <div class="transaction-type">Price Submission - STAX</div>
-                                <div class="transaction-time">5 hours ago</div>
-                            </div>
-                            <div class="transaction-status status-confirmed">Confirmed</div>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- DeFi Integrations Card -->
             <div class="operation-card">
                 <div class="operation-header">
                     <h2 class="operation-title">DeFi Integrations</h2>
-                    <p class="operation-description">Monitor protocol integrations and their usage of Port Authority price feeds</p>
+                    <p class="operation-description">Monitor protocol integrations and their usage of Guardian Gateway price feeds</p>
                 </div>
 
                 <div class="integration-grid">
@@ -979,67 +892,97 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="integration-card">
-                        <div class="integration-header">
-                            <span class="integration-name">Hermetica</span>
-                            <div class="integration-status">Active</div>
-                        </div>
-                        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
-                            Synthetic assets with Bitcoin-backed stability
-                        </p>
-                        <div class="integration-metrics">
-                            <div class="metric">
-                                <div class="metric-value">2,156</div>
-                                <div class="metric-label">API Calls Today</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-value">99.7%</div>
-                                <div class="metric-label">Uptime</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Simplified Stacks Wallet API - No external libraries needed
+        const StacksWallet = {
+            async connect() {
+                // Check for Leather wallet
+                if (window.LeatherProvider) {
+                    const resp = await window.LeatherProvider.request('getAddresses');
+                    return {
+                        address: resp.result.addresses.find(a => a.type === 'stx').address,
+                        provider: 'Leather'
+                    };
+                }
+                // Check for Xverse wallet  
+                else if (window.XverseProviders?.StacksProvider) {
+                    const resp = await window.XverseProviders.StacksProvider.request('getAddresses', null);
+                    return {
+                        address: resp.result.addresses.find(a => a.type === 'stx').address,
+                        provider: 'Xverse'
+                    };
+                }
+                else {
+                    throw new Error('No Stacks wallet found. Please install Leather or Xverse extension.');
+                }
+            },
+            
+            async callContract(contractAddress, contractName, functionName, functionArgs, network = 'testnet') {
+                const txOptions = {
+                    contractAddress,
+                    contractName,
+                    functionName,
+                    functionArgs,
+                    network,
+                    postConditions: []
+                };
+                
+                if (window.LeatherProvider) {
+                    return await window.LeatherProvider.request('callContract', txOptions);
+                } else if (window.XverseProviders?.StacksProvider) {
+                    return await window.XverseProviders.StacksProvider.request('callContract', txOptions);
+                }
+            },
+            
+            // Helper to create Clarity values
+            cv: {
+                stringAscii(str) {
+                    return { type: 'string-ascii', value: str };
+                },
+                uint(num) {
+                    return { type: 'uint', value: num.toString() };
+                },
+                buffer(hexStr) {
+                    return { type: 'buffer', value: hexStr.replace('0x', '') };
+                }
+            }
+        };
+
+        // BLOCKCHAIN CONFIGURATION
+        const CONTRACT_ADDRESS = 'ST2Q2N5ZA8M6G7HKR0V45R7ZVX99A93T06W1PV0FW';
+        const CONTRACT_NAME = 'bitcoin-oracle-core';
+        const NETWORK = 'testnet';
+
         // Global state
         let walletConnected = false;
         let currentAccount = null;
         let isSubmitting = false;
 
-        // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             startPriceFeedUpdates();
-            populateOracleAddress();
         });
 
-        // Initialize the application
         function initializeApp() {
-            console.log('Port Authority DApp initialized');
-            
-            // Check for existing wallet connection
-            checkWalletConnection();
-            
-            // Set up event listeners
+            console.log('Guardian Gateway DApp initialized with simplified wallet integration');
             setupEventListeners();
         }
 
-        // Setup event listeners
         function setupEventListeners() {
             document.getElementById('walletConnect').addEventListener('click', connectWallet);
             document.getElementById('asset-select').addEventListener('change', updatePriceFromFeed);
         }
 
-        // Wallet connection
+        // SIMPLIFIED WALLET CONNECTION
         async function connectWallet() {
             const button = document.getElementById('walletConnect');
             
             if (walletConnected) {
-                // Disconnect wallet
                 walletConnected = false;
                 currentAccount = null;
                 button.textContent = 'Connect Wallet';
@@ -1051,68 +994,46 @@
             try {
                 button.innerHTML = '<div class="loading"></div> Connecting...';
                 
-                // Simulate wallet connection (replace with actual Stacks wallet integration)
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                const result = await StacksWallet.connect();
                 
-                // Mock successful connection
                 walletConnected = true;
-                currentAccount = 'SP1ABC123DEF456GHI789JKL012MNO345PQR678STU';
+                currentAccount = result.address;
                 
                 button.textContent = `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
                 button.classList.add('connected');
                 
-                // Update oracle address
                 document.getElementById('oracle-address').value = currentAccount;
-                
-                showMessage('Wallet connected successfully!', 'success');
+                showMessage(`Connected to ${result.provider} wallet!`, 'success');
                 
             } catch (error) {
                 console.error('Wallet connection failed:', error);
                 button.textContent = 'Connect Wallet';
-                showMessage('Failed to connect wallet. Please try again.', 'error');
+                showMessage(error.message || 'Failed to connect wallet. Please install Leather or Xverse.', 'error');
             }
         }
 
-        // Check for existing wallet connection
-        function checkWalletConnection() {
-            // In a real app, check for existing wallet session
-            // For demo purposes, simulate no existing connection
-        }
-
-        // Tab switching
         function switchTab(tabName) {
-            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-            
-            // Add active class to clicked tab
             event.target.classList.add('active');
             document.getElementById(`${tabName}-tab`).style.display = 'block';
         }
 
-        // Update price input when asset is selected
         function updatePriceFromFeed() {
             const asset = document.getElementById('asset-select').value;
-            const priceInput = document.getElementById('price-input');
-            const confidenceInput = document.getElementById('confidence-input');
-            
-            // Get current price from dashboard
             const priceElement = document.getElementById(`${asset.toLowerCase()}-price`);
             const confidenceElement = document.getElementById(`${asset.toLowerCase()}-confidence`);
             
             if (priceElement && confidenceElement) {
-                const price = priceElement.textContent.replace(', '').replace(',', '');
-                const confidence = confidenceElement.textContent.replace('%', '');
-                
-                priceInput.value = price;
-                confidenceInput.value = confidence;
+                document.getElementById('price-input').value = priceElement.textContent.replace('$', '').replace(',', '');
+                document.getElementById('confidence-input').value = confidenceElement.textContent.replace('%', '');
             }
         }
 
-        // Submit oracle data
+        // SIMPLIFIED ORACLE DATA SUBMISSION
         async function submitOracleData() {
             if (!walletConnected) {
-                showMessage('Please connect your wallet first', 'error');
+                showMessage('Please connect your Stacks wallet first', 'error');
                 return;
             }
 
@@ -1126,40 +1047,46 @@
                 submitButton.innerHTML = '<div class="loading"></div> Submitting...';
                 submitButton.disabled = true;
 
-                // Get form data
-                const formData = {
-                    asset: document.getElementById('asset-select').value,
-                    price: parseFloat(document.getElementById('price-input').value),
-                    confidence: parseInt(document.getElementById('confidence-input').value),
-                    blockHash: document.getElementById('block-hash-input').value,
-                    vaaPayload: document.getElementById('vaa-input').value
-                };
+                const assetId = document.getElementById('asset-select').value;
+                const price = parseFloat(document.getElementById('price-input').value);
+                const confidence = parseInt(document.getElementById('confidence-input').value);
+                const blockHash = document.getElementById('block-hash-input').value;
+                const vaaPayload = document.getElementById('vaa-input').value;
 
-                // Validate form data
-                if (!validateSubmissionForm(formData)) {
+                if (!validateSubmissionForm({assetId, price, confidence, blockHash, vaaPayload})) {
                     return;
                 }
 
-                // Start validation animation
                 startValidationAnimation();
-
-                // Simulate the 8-layer validation process
                 await simulateValidationLayers();
 
-                // Simulate smart contract interaction
-                await simulateContractCall(formData);
+                const priceInMicroUnits = Math.floor(price * 1000000);
 
-                showMessage('Oracle data submitted successfully! Awaiting Bitcoin confirmation.', 'success');
-                
-                // Add to transaction history
-                addTransactionToHistory('Price Submission - ' + formData.asset, 'pending');
-                
-                // Reset form
+                const functionArgs = [
+                    StacksWallet.cv.stringAscii(assetId),
+                    StacksWallet.cv.uint(priceInMicroUnits),
+                    StacksWallet.cv.uint(confidence),
+                    StacksWallet.cv.buffer(blockHash),
+                    StacksWallet.cv.buffer(vaaPayload)
+                ];
+
+                const result = await StacksWallet.callContract(
+                    CONTRACT_ADDRESS,
+                    CONTRACT_NAME,
+                    'submit-oracle-data',
+                    functionArgs,
+                    NETWORK
+                );
+
+                console.log('Transaction submitted:', result.txId);
+                showMessage(`Oracle data submitted! Transaction: ${result.txId}`, 'success');
+                addTransactionToHistory('Price Submission - ' + assetId, 'pending', result.txId);
                 resetSubmissionForm();
+                resetValidationLayers();
 
             } catch (error) {
                 console.error('Submission failed:', error);
-                showMessage('Failed to submit oracle data. Please try again.', 'error');
+                showMessage('Failed to submit oracle data: ' + error.message, 'error');
                 resetValidationLayers();
             } finally {
                 isSubmitting = false;
@@ -1168,92 +1095,10 @@
             }
         }
 
-        // Validate submission form
-        function validateSubmissionForm(data) {
-            if (!data.asset) {
-                showMessage('Please select an asset', 'error');
-                return false;
-            }
-            
-            if (!data.price || data.price <= 0) {
-                showMessage('Please enter a valid price', 'error');
-                return false;
-            }
-            
-            if (!data.confidence || data.confidence < 90 || data.confidence > 100) {
-                showMessage('Confidence must be between 90-100%', 'error');
-                return false;
-            }
-            
-            if (!data.blockHash || data.blockHash.length < 32) {
-                showMessage('Please enter a valid Bitcoin block hash', 'error');
-                return false;
-            }
-            
-            if (!data.vaaPayload) {
-                showMessage('Please enter VAA payload', 'error');
-                return false;
-            }
-            
-            return true;
-        }
-
-        // Start validation animation
-        function startValidationAnimation() {
-            resetValidationLayers();
-            showMessage('Starting 8-layer validation process...', 'warning');
-        }
-
-        // Simulate validation layers
-        async function simulateValidationLayers() {
-            const layers = [
-                'VAA Signature Verification',
-                'Pyth Oracle Integration', 
-                'Multi-Oracle Consensus',
-                'Bitcoin Block Validation',
-                'Confidence Score Analysis',
-                'Time-Window Validation',
-                'Price Deviation Limits',
-                'Bitcoin Confirmation Wait'
-            ];
-
-            for (let i = 1; i <= 8; i++) {
-                const layer = document.getElementById(`layer-${i}`);
-                layer.classList.add('processing');
-                
-                // Simulate processing time
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                layer.classList.remove('processing');
-                layer.classList.add('passed');
-                
-                // Update message
-                showMessage(`Layer ${i} passed: ${layers[i-1]}`, 'success');
-            }
-        }
-
-        // Reset validation layers
-        function resetValidationLayers() {
-            for (let i = 1; i <= 8; i++) {
-                const layer = document.getElementById(`layer-${i}`);
-                layer.classList.remove('processing', 'passed');
-            }
-        }
-
-        // Simulate smart contract call
-        async function simulateContractCall(data) {
-            showMessage('Calling submit-oracle-data function...', 'warning');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Simulate transaction hash
-            const txHash = 'SP' + Math.random().toString(36).substr(2, 38).toUpperCase();
-            showMessage(`Transaction submitted: ${txHash}`, 'success');
-        }
-
-        // Register oracle
+        // SIMPLIFIED ORACLE REGISTRATION
         async function registerOracle() {
             if (!walletConnected) {
-                showMessage('Please connect your wallet first', 'error');
+                showMessage('Please connect your Stacks wallet first', 'error');
                 return;
             }
 
@@ -1265,58 +1110,117 @@
                 registerButton.disabled = true;
 
                 const stxBond = parseFloat(document.getElementById('stx-bond').value);
-                const btcBond = parseFloat(document.getElementById('btc-bond').value);
 
                 if (!stxBond || stxBond < 1000) {
                     showMessage('STX bond must be at least 1,000 STX', 'error');
                     return;
                 }
 
-                if (!btcBond || btcBond < 0.01) {
-                    showMessage('BTC bond must be at least 0.01 BTC', 'error');
-                    return;
-                }
+                const stxBondInMicroStx = Math.floor(stxBond * 1000000);
 
-                // Simulate registration process
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                const functionArgs = [
+                    StacksWallet.cv.uint(stxBondInMicroStx)
+                ];
 
-                showMessage('Oracle registration successful! You can now submit price data.', 'success');
-                
-                // Add to transaction history
-                addTransactionToHistory('Oracle Registration', 'confirmed');
+                const result = await StacksWallet.callContract(
+                    CONTRACT_ADDRESS,
+                    CONTRACT_NAME,
+                    'register-oracle',
+                    functionArgs,
+                    NETWORK
+                );
+
+                console.log('Registration submitted:', result.txId);
+                showMessage(`Oracle registration successful! Transaction: ${result.txId}`, 'success');
+                addTransactionToHistory('Oracle Registration', 'pending', result.txId);
 
             } catch (error) {
                 console.error('Registration failed:', error);
-                showMessage('Failed to register oracle. Please try again.', 'error');
+                showMessage('Failed to register oracle: ' + error.message, 'error');
             } finally {
                 registerButton.textContent = originalText;
                 registerButton.disabled = false;
             }
         }
 
-        // Add transaction to history
-        function addTransactionToHistory(type, status) {
-            const history = document.getElementById('transaction-history');
-            const now = new Date();
-            const timeString = 'Just now';
+        function validateSubmissionForm(data) {
+            const validAssets = ['BTC', 'ETH', 'USDC', 'STAX'];
+            if (!validAssets.includes(data.assetId)) {
+                showMessage('Please select a valid asset', 'error');
+                return false;
+            }
             
+            const priceBounds = {
+                'BTC': { min: 1000, max: 500000 },
+                'ETH': { min: 100, max: 50000 },
+                'USDC': { min: 0.95, max: 1.05 },
+                'STAX': { min: 0.01, max: 100 }
+            };
+            
+            const bounds = priceBounds[data.assetId];
+            if (data.price < bounds.min || data.price > bounds.max) {
+                showMessage(`${data.assetId} price must be between $${bounds.min} and $${bounds.max}`, 'error');
+                return false;
+            }
+            
+            if (data.confidence < 90 || data.confidence > 100) {
+                showMessage('Confidence must be between 90-100%', 'error');
+                return false;
+            }
+            
+            const cleanHash = data.blockHash.replace('0x', '');
+            if (cleanHash.length !== 64 || !/^[0-9a-fA-F]{64}$/.test(cleanHash)) {
+                showMessage('Bitcoin block hash must be 64 hexadecimal characters', 'error');
+                return false;
+            }
+            
+            if (!/^0x[0-9a-fA-F]+$/.test(data.vaaPayload) || data.vaaPayload.length < 10) {
+                showMessage('VAA payload must be valid hexadecimal starting with 0x', 'error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function startValidationAnimation() {
+            resetValidationLayers();
+            showMessage('Starting 8-layer validation process...', 'warning');
+        }
+
+        async function simulateValidationLayers() {
+            for (let i = 1; i <= 8; i++) {
+                const layer = document.getElementById(`layer-${i}`);
+                layer.classList.add('processing');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                layer.classList.remove('processing');
+                layer.classList.add('passed');
+            }
+        }
+
+        function resetValidationLayers() {
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`layer-${i}`).classList.remove('processing', 'passed');
+            }
+        }
+
+        function addTransactionToHistory(type, status, txId = '') {
+            const history = document.getElementById('transaction-history');
+            const txLink = txId ? `<a href="https://explorer.hiro.so/txid/${txId}?chain=testnet" target="_blank" class="transaction-link">View on Explorer</a>` : '';
             const statusClass = status === 'confirmed' ? 'status-confirmed' : 'status-pending';
             const statusText = status === 'confirmed' ? 'Confirmed' : 'Pending';
             
-            const transactionHtml = `
+            history.insertAdjacentHTML('afterbegin', `
                 <div class="transaction-item">
                     <div class="transaction-details">
                         <div class="transaction-type">${type}</div>
-                        <div class="transaction-time">${timeString}</div>
+                        <div class="transaction-time">Just now</div>
+                        ${txLink}
                     </div>
                     <div class="transaction-status ${statusClass}">${statusText}</div>
                 </div>
-            `;
-            
-            history.insertAdjacentHTML('afterbegin', transactionHtml);
+            `);
         }
 
-        // Reset submission form
         function resetSubmissionForm() {
             document.getElementById('price-input').value = '';
             document.getElementById('confidence-input').value = '';
@@ -1324,16 +1228,7 @@
             document.getElementById('vaa-input').value = '';
         }
 
-        // Populate oracle address
-        function populateOracleAddress() {
-            if (walletConnected && currentAccount) {
-                document.getElementById('oracle-address').value = currentAccount;
-            }
-        }
-
-        // Show message
         function showMessage(text, type) {
-            // Remove existing messages
             const existingMessages = document.querySelectorAll('.message');
             existingMessages.forEach(msg => {
                 if (!msg.classList.contains('warning') || type !== 'success') {
@@ -1341,127 +1236,112 @@
                 }
             });
 
-            // Create new message
             const message = document.createElement('div');
             message.className = `message ${type}`;
             message.textContent = text;
 
-            // Insert at the top of the current tab content
             const activeTab = document.querySelector('.tab-content[style*="block"], .tab-content:not([style])');
             if (activeTab) {
                 activeTab.insertBefore(message, activeTab.firstChild);
             }
 
-            // Auto-remove success/error messages after 5 seconds
             if (type === 'success' || type === 'error') {
-                setTimeout(() => {
-                    if (message.parentNode) {
-                        message.remove();
-                    }
-                }, 5000);
+                setTimeout(() => message.remove(), 5000);
             }
         }
 
-        // Start price feed updates
         function startPriceFeedUpdates() {
-            // Update prices every 30 seconds
-            setInterval(updatePriceFeeds, 30000);
-            
-            // Update network stats every 10 seconds
-            setInterval(updateNetworkStats, 10000);
+            updatePriceFeeds();
+            updateNetworkStats();
+            setInterval(updatePriceFeeds, 45000);
+            setInterval(updateNetworkStats, 15000);
         }
 
-        // Update price feeds
-        function updatePriceFeeds() {
+        async function updatePriceFeeds() {
             const assets = ['btc', 'eth', 'usdc', 'stax'];
-            const baseValues = {
-                'btc': 50000,
-                'eth': 3000,
-                'usdc': 1.00,
-                'stax': 1.50
-            };
-
-            assets.forEach(asset => {
-                const priceElement = document.getElementById(`${asset}-price`);
-                const confidenceElement = document.getElementById(`${asset}-confidence`);
-                const confidenceBar = priceElement.parentElement.querySelector('.confidence-fill');
-                
-                if (priceElement && asset !== 'usdc') {
-                    // Add small random variation
-                    const baseValue = baseValues[asset];
-                    const variation = (Math.random() - 0.5) * 0.02; // ±1% variation
-                    const newValue = baseValue * (1 + variation);
+            
+            for (const asset of assets) {
+                try {
+                    let price, confidence;
                     
-                    if (asset === 'btc') {
-                        priceElement.textContent = ' + Math.round(newValue).toLocaleString() + '.00';
-                    } else if (asset === 'eth') {
-                        priceElement.textContent = ' + Math.round(newValue).toLocaleString() + '.00';
+                    if (asset === 'stax') {
+                        price = await fetchSTXPrice();
+                        confidence = 92 + Math.floor(Math.random() * 6);
                     } else {
-                        priceElement.textContent = ' + newValue.toFixed(2);
+                        const apiAsset = asset === 'usdc' ? 'usd-coin' : (asset === 'btc' ? 'bitcoin' : 'ethereum');
+                        try {
+                            const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${apiAsset}&vs_currencies=usd`);
+                            const data = await response.json();
+                            price = data[apiAsset]?.usd || getFallbackPrice(asset);
+                            confidence = asset === 'usdc' ? 99 : (95 + Math.floor(Math.random() * 4));
+                        } catch {
+                            price = getFallbackPrice(asset);
+                            confidence = getFallbackConfidence(asset);
+                        }
                     }
-                }
-                
-                // Update confidence scores
-                if (confidenceElement) {
-                    const baseConfidence = asset === 'usdc' ? 99 : (asset === 'stax' ? 90 : 95);
-                    const confidenceVariation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-                    const newConfidence = Math.max(88, Math.min(99, baseConfidence + confidenceVariation));
                     
-                    confidenceElement.textContent = newConfidence + '%';
-                    if (confidenceBar) {
-                        confidenceBar.style.width = newConfidence + '%';
-                    }
+                    updateAssetDisplay(asset, price, confidence);
+                } catch (error) {
+                    updateAssetDisplay(asset, getFallbackPrice(asset), getFallbackConfidence(asset));
                 }
-            });
+            }
         }
 
-        // Update network stats
+        async function fetchSTXPrice() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stacks&vs_currencies=usd');
+                const data = await response.json();
+                return data.stacks?.usd || 1.50;
+            } catch {
+                return 1.45 + (Math.random() * 0.10);
+            }
+        }
+
+        function updateAssetDisplay(asset, price, confidence) {
+            const priceElement = document.getElementById(`${asset}-price`);
+            const confidenceElement = document.getElementById(`${asset}-confidence`);
+            const confidenceBar = priceElement?.parentElement?.querySelector('.confidence-fill');
+            
+            if (priceElement) {
+                if (asset === 'usdc') {
+                    priceElement.textContent = '$1.00';
+                } else if (asset === 'btc') {
+                    priceElement.textContent = '$' + Math.round(price).toLocaleString() + '.00';
+                } else {
+                    priceElement.textContent = '$' + price.toFixed(2);
+                }
+            }
+            
+            if (confidenceElement) {
+                confidenceElement.textContent = confidence + '%';
+            }
+            
+            if (confidenceBar) {
+                confidenceBar.style.width = confidence + '%';
+            }
+        }
+
+        function getFallbackPrice(asset) {
+            return { 'btc': 67000, 'eth': 3400, 'usdc': 1.00, 'stax': 1.45 }[asset];
+        }
+
+        function getFallbackConfidence(asset) {
+            return { 'btc': 95, 'eth': 93, 'usdc': 99, 'stax': 90 }[asset];
+        }
+
         function updateNetworkStats() {
             const activeOracles = document.getElementById('active-oracles');
-            const consensusRounds = document.getElementById('consensus-rounds');
-            const btcConfirmations = document.getElementById('btc-confirmations');
-            
             if (activeOracles) {
-                // Simulate oracle count changes
-                const currentCount = parseInt(activeOracles.textContent);
-                const variation = Math.random() > 0.9 ? (Math.random() > 0.5 ? 1 : -1) : 0;
-                const newCount = Math.max(3, Math.min(10, currentCount + variation));
-                activeOracles.textContent = newCount;
+                const current = parseInt(activeOracles.textContent);
+                const change = Math.random() > 0.85 ? (Math.random() > 0.5 ? 1 : -1) : 0;
+                activeOracles.textContent = Math.max(3, Math.min(12, current + change));
             }
             
+            const consensusRounds = document.getElementById('consensus-rounds');
             if (consensusRounds) {
-                // Increment consensus rounds
-                const currentRounds = parseInt(consensusRounds.textContent);
-                consensusRounds.textContent = currentRounds + 1;
-            }
-            
-            if (btcConfirmations) {
-                // Keep confirmations at 6 (or simulate new block)
-                const current = parseInt(btcConfirmations.textContent);
-                if (Math.random() > 0.95) { // 5% chance of new block
-                    btcConfirmations.textContent = '1';
-                    setTimeout(() => {
-                        let count = 1;
-                        const interval = setInterval(() => {
-                            count++;
-                            btcConfirmations.textContent = count;
-                            if (count >= 6) {
-                                clearInterval(interval);
-                            }
-                        }, 30000); // 30 seconds per confirmation
-                    }, 1000);
-                }
+                consensusRounds.textContent = parseInt(consensusRounds.textContent) + 1;
             }
         }
-
-        // Simulate real-time data updates for demo
-        setTimeout(() => {
-            if (document.getElementById('submit-tab').style.display !== 'none') {
-                // Auto-fill some demo data after 3 seconds
-                document.getElementById('block-hash-input').value = '0000000000000000000' + Math.random().toString(36).substr(2, 13);
-                document.getElementById('vaa-input').value = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-            }
-        }, 3000);
     </script>
 </body>
 </html>

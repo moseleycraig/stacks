@@ -1,8 +1,8 @@
 [project]
 name = 'btc-oracle-sec-layer'
-description = "Bitcoin Oracle Protocol with 8-layer validation"
+description = ''
 authors = []
-telemetry = false
+telemetry = true
 cache_dir = './.cache'
 requirements = []
 [contracts.bitcoin-oracle-core]
@@ -19,6 +19,3 @@ callee_filter = false
 [repl.remote_data]
 enabled = false
 api_url = 'https://api.hiro.so'
-
-[deployment]
-network = "testnet"

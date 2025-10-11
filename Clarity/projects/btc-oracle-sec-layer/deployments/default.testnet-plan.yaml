@@ -2,7 +2,7 @@
 id: 0
 name: Testnet deployment
 network: testnet
-stacks-node: "https://stacks-node-api.testnet.stacks.co"
+stacks-node: "https://api.testnet.hiro.so"
 bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
 plan:
   batches:
@@ -10,8 +10,8 @@ plan:
       transactions:
         - contract-publish:
             contract-name: bitcoin-oracle-core
-            expected-sender: ST3K8WFQP2T34F18PKVFBP4QG3Q3590BF3QTZH5RA
-            cost: 40894
+            expected-sender: ST2Q2N5ZA8M6G7HKR0V45R7ZVX99A93T06W1PV0FW
+            cost: 408690
             path: contracts/bitcoin-oracle-core.clar
             anchor-block-only: true
             clarity-version: 3
