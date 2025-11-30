@@ -87,3 +87,147 @@
 (define-constant GRADE_C "C")
 (define-constant GRADE_D "D")
 (define-constant GRADE_F "F")
+
+;; ===== DATA VARIABLES =====
+
+(define-data-var contract-initialized bool false)
+(define-data-var total-protocols uint u0)
+(define-data-var contract-paused bool false)
+(define-data-var score-update-interval uint u144)
+
+;; ===== DATA MAPS =====
+
+;; Protocol Registry - Basic protocol information
+(define-map protocol-registry
+    { protocol-address: principal }
+    {
+        name: (string-ascii 64),
+        is-active: bool,
+        date-registered: uint,
+        owner: principal,
+        category: (string-ascii 32)
+    }
+)
+
+;; Protocol Scores - Current health scores and grades
+(define-map protocol-scores
+    { protocol-address: principal }
+    {
+        total-score: uint,
+        grade: (string-ascii 1),
+        security-score: uint,
+        liquidity-score: uint,
+        decentralization-score: uint,
+        operational-score: uint,
+        last-updated: uint,
+        block-height: uint
+    }
+)
+
+;; Historical Scores - Time-series score data
+(define-map historical-scores
+    { 
+        protocol-address: principal,
+        timestamp: uint
+    }
+    {
+        total-score: uint,
+        grade: (string-ascii 1),
+        block-height: uint
+    }
+)
+
+;; Security Metrics - Detailed security breakdown
+(define-map security-metrics
+    { protocol-address: principal }
+    {
+        audit-status: bool,
+        audit-score: uint,
+        admin-keys-score: uint,
+        time-locks-score: uint,
+        bug-bounty-score: uint,
+        upgradeability-score: uint,
+        total-security-score: uint
+    }
+)
+
+;; Liquidity Metrics - Detailed liquidity breakdown
+(define-map liquidity-metrics
+    { protocol-address: principal }
+    {
+        tvl: uint,
+        tvl-score: uint,
+        depth-score: uint,
+        volume-score: uint,
+        volatility-score: uint,
+        exit-capacity-score: uint,
+        total-liquidity-score: uint
+    }
+)
+
+;; Decentralization Metrics - Detailed decentralization breakdown
+(define-map decentralization-metrics
+    { protocol-address: principal }
+    {
+        whale-concentration-score: uint,
+        governance-score: uint,
+        oracle-score: uint,
+        user-base-score: uint,
+        transparency-score: uint,
+        total-decentralization-score: uint
+    }
+)
+
+;; Operational Metrics - Detailed operational breakdown
+(define-map operational-metrics
+    { protocol-address: principal }
+    {
+        uptime-score: uint,
+        incidents-score: uint,
+        age-score: uint,
+        documentation-score: uint,
+        total-operational-score: uint
+    }
+)
+
+;; User Alerts - User-configured alert settings
+(define-map user-alerts
+    {
+        user: principal,
+        protocol-address: principal
+    }
+    {
+        threshold: uint,
+        alert-type: (string-ascii 16),
+        is-active: bool,
+        last-triggered: uint
+    }
+)
+
+;; User Alert Count - Track number of alerts per user
+(define-map user-alert-count
+    { user: principal }
+    { count: uint }
+)
+
+;; Registered Oracles - Authorized data providers
+(define-map registered-oracles
+    { oracle-address: principal }
+    {
+        is-active: bool,
+        registration-block: uint,
+        reputation-score: uint,
+        total-submissions: uint
+    }
+)
+
+;; Protocol Pause Status - Emergency pause per protocol
+(define-map protocol-pause-status
+    { protocol-address: principal }
+    {
+        is-paused: bool,
+        paused-at: uint,
+        paused-by: principal,
+        reason: (string-ascii 128)
+    }
+)
