@@ -231,3 +231,212 @@
         reason: (string-ascii 128)
     }
 )
+
+;; ===== PRIVATE HELPER FUNCTIONS =====
+
+;; Authorization Helpers
+
+(define-private (is-contract-owner (caller principal))
+    (is-eq caller CONTRACT_OWNER)
+)
+
+(define-private (is-registered-oracle (caller principal))
+    (match (map-get? registered-oracles { oracle-address: caller })
+        oracle (get is-active oracle)
+        false
+    )
+)
+
+(define-private (is-protocol-owner (caller principal) (protocol principal))
+    (match (map-get? protocol-registry { protocol-address: protocol })
+        registry (is-eq caller (get owner registry))
+        false
+    )
+)
+
+;; Validation Helpers
+
+(define-private (is-valid-score (score uint))
+    (and 
+        (>= score MINIMUM_SCORE_THRESHOLD)
+        (<= score MAXIMUM_SCORE_THRESHOLD)
+    )
+)
+
+(define-private (is-valid-percentage (value uint))
+    (and (>= value u0) (<= value u100))
+)
+
+(define-private (protocol-exists (protocol principal))
+    (is-some (map-get? protocol-registry { protocol-address: protocol }))
+)
+
+(define-private (is-protocol-active (protocol principal))
+    (match (map-get? protocol-registry { protocol-address: protocol })
+        registry (get is-active registry)
+        false
+    )
+)
+
+(define-private (is-score-stale (last-update uint))
+    (> (- stacks-block-height last-update) SCORE_STALENESS_THRESHOLD)
+)
+
+(define-private (is-string-valid (str (string-ascii 64)) (max-len uint))
+    (and 
+        (> (len str) u0)
+        (<= (len str) max-len)
+    )
+)
+
+(define-private (is-system-paused)
+    (var-get contract-paused)
+)
+
+(define-private (is-protocol-paused (protocol principal))
+    (match (map-get? protocol-pause-status { protocol-address: protocol })
+        status (get is-paused status)
+        false
+    )
+)
+
+;; Calculation Helpers
+
+(define-private (calculate-total-score 
+    (security uint)
+    (liquidity uint)
+    (decentralization uint)
+    (operational uint))
+    (+
+        (/ (* security WEIGHT_SECURITY) u100)
+        (+ (/ (* liquidity WEIGHT_LIQUIDITY) u100)
+            (+ (/ (* decentralization WEIGHT_DECENTRALIZATION) u100)
+                (/ (* operational WEIGHT_OPERATIONAL) u100)
+            )
+        )
+    )
+)
+
+(define-private (calculate-weighted-score (score uint) (weight uint))
+    (/ (* score weight) u100)
+)
+
+;; Grade Assignment Helpers
+
+(define-private (score-to-grade (score uint))
+    (if (>= score GRADE_A_THRESHOLD)
+        GRADE_A
+        (if (>= score GRADE_B_THRESHOLD)
+            GRADE_B
+            (if (>= score GRADE_C_THRESHOLD)
+                GRADE_C
+                (if (>= score GRADE_D_THRESHOLD)
+                    GRADE_D
+                    GRADE_F
+                )
+            )
+        )
+    )
+)
+
+(define-private (is-grade-critical (grade (string-ascii 1)))
+    (or (is-eq grade GRADE_D) (is-eq grade GRADE_F))
+)
+
+;; Security Score Calculation
+
+(define-private (calculate-security-score
+    (audit uint)
+    (admin-keys uint)
+    (time-locks uint)
+    (bug-bounty uint)
+    (upgradeability uint))
+    (+ audit (+ admin-keys (+ time-locks (+ bug-bounty upgradeability))))
+)
+
+;; Liquidity Score Calculation
+
+(define-private (calculate-liquidity-score
+    (tvl-score uint)
+    (depth uint)
+    (volume uint)
+    (volatility uint)
+    (exit-capacity uint))
+    (+ tvl-score (+ depth (+ volume (+ volatility exit-capacity))))
+)
+
+;; Decentralization Score Calculation
+
+(define-private (calculate-decentralization-score
+    (whale uint)
+    (governance uint)
+    (oracle uint)
+    (user-base uint)
+    (transparency uint))
+    (+ whale (+ governance (+ oracle (+ user-base transparency))))
+)
+
+;; Operational Score Calculation
+
+(define-private (calculate-operational-score
+    (uptime uint)
+    (incidents uint)
+    (age uint)
+    (documentation uint))
+    (+ uptime (+ incidents (+ age documentation)))
+)
+
+;; Alert Helpers
+
+(define-private (should-trigger-alert (current-score uint) (threshold uint))
+    (< current-score threshold)
+)
+
+(define-private (get-user-alert-count (user principal))
+    (default-to 
+        u0
+        (get count (map-get? user-alert-count { user: user }))
+    )
+)
+
+(define-private (has-max-alerts (user principal))
+    (>= (get-user-alert-count user) MAX_ALERTS_PER_USER)
+)
+
+;; Data Retrieval Helpers
+
+(define-private (get-protocol-score (protocol principal))
+    (map-get? protocol-scores { protocol-address: protocol })
+)
+
+(define-private (get-protocol-info (protocol principal))
+    (map-get? protocol-registry { protocol-address: protocol })
+)
+
+;; Score Deviation Check
+
+(define-private (is-score-deviation-acceptable 
+    (old-score uint) 
+    (new-score uint))
+    (let
+        (
+            (difference (if (> new-score old-score)
+                (- new-score old-score)
+                (- old-score new-score)
+            ))
+        )
+        (<= difference MAX_SCORE_DEVIATION)
+    )
+)
+
+;; Timestamp Validation
+
+(define-private (is-valid-timestamp (timestamp uint))
+    (and (> timestamp u0) (<= timestamp stacks-block-height))
+)
+
+;; Protocol Count Check
+
+(define-private (has-max-protocols)
+    (>= (var-get total-protocols) MAX_PROTOCOLS)
+)
