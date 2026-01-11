@@ -120,7 +120,7 @@
         decentralization-score: uint,
         operational-score: uint,
         last-updated: uint,
-        block-height: uint
+        stacks-block-height: uint
     }
 )
 
@@ -133,7 +133,7 @@
     {
         total-score: uint,
         grade: (string-ascii 1),
-        block-height: uint
+        stacks-block-height: uint
     }
 )
 
