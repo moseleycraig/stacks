@@ -586,3 +586,489 @@
         (err ERR_PROTOCOL_NOT_FOUND)
     )
 )
+
+;; ===== PUBLIC FUNCTIONS =====
+
+;; Admin Functions
+
+(define-public (initialize-contract)
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (asserts! (not (var-get contract-initialized)) ERR_ALREADY_INITIALIZED)
+        (var-set contract-initialized true)
+        (ok true)
+    )
+)
+
+(define-public (register-oracle (oracle principal))
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (asserts! (var-get contract-initialized) ERR_CONTRACT_NOT_INITIALIZED)
+        (asserts! (not (is-registered-oracle oracle)) ERR_ORACLE_ALREADY_REGISTERED)
+        (map-set registered-oracles
+            { oracle-address: oracle }
+            {
+                is-active: true,
+                registration-block: stacks-block-height,
+                reputation-score: u100,
+                total-submissions: u0
+            }
+        )
+        (ok true)
+    )
+)
+
+(define-public (deactivate-oracle (oracle principal))
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (asserts! (is-registered-oracle oracle) ERR_ORACLE_NOT_REGISTERED)
+        (map-set registered-oracles
+            { oracle-address: oracle }
+            (merge (unwrap! (map-get? registered-oracles { oracle-address: oracle }) ERR_ORACLE_NOT_REGISTERED)
+                { is-active: false }
+            )
+        )
+        (ok true)
+    )
+)
+
+(define-public (pause-contract)
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (var-set contract-paused true)
+        (ok true)
+    )
+)
+
+(define-public (unpause-contract)
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (var-set contract-paused false)
+        (ok true)
+    )
+)
+
+(define-public (pause-protocol (protocol principal) (reason (string-ascii 128)))
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+        (map-set protocol-pause-status
+            { protocol-address: protocol }
+            {
+                is-paused: true,
+                paused-at: stacks-block-height,
+                paused-by: tx-sender,
+                reason: reason
+            }
+        )
+        (ok true)
+    )
+)
+
+(define-public (unpause-protocol (protocol principal))
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR_NOT_CONTRACT_OWNER)
+        (asserts! (is-protocol-paused protocol) ERR_PROTOCOL_NOT_FOUND)
+        (map-set protocol-pause-status
+            { protocol-address: protocol }
+            {
+                is-paused: false,
+                paused-at: u0,
+                paused-by: tx-sender,
+                reason: ""
+            }
+        )
+        (ok true)
+    )
+)
+
+;; Protocol Management Functions
+
+(define-public (register-protocol 
+    (protocol principal)
+    (name (string-ascii 64))
+    (category (string-ascii 32)))
+    (begin
+        (asserts! (var-get contract-initialized) ERR_CONTRACT_NOT_INITIALIZED)
+        (asserts! (not (is-system-paused)) ERR_SYSTEM_PAUSED)
+        (asserts! (not (has-max-protocols)) ERR_MAX_PROTOCOLS_REACHED)
+        (asserts! (not (protocol-exists protocol)) ERR_PROTOCOL_ALREADY_EXISTS)
+        (asserts! (is-string-valid name u64) ERR_EMPTY_STRING)
+        (asserts! (is-string-valid category u32) ERR_EMPTY_STRING)
+        
+        (map-set protocol-registry
+            { protocol-address: protocol }
+            {
+                name: name,
+                is-active: true,
+                date-registered: stacks-block-height,
+                owner: tx-sender,
+                category: category
+            }
+        )
+        (var-set total-protocols (+ (var-get total-protocols) u1))
+        (ok true)
+    )
+)
+
+(define-public (update-protocol-info
+    (protocol principal)
+    (name (string-ascii 64))
+    (category (string-ascii 32)))
+    (begin
+        (asserts! (is-protocol-owner tx-sender protocol) ERR_NOT_PROTOCOL_OWNER)
+        (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+        (asserts! (is-string-valid name u64) ERR_EMPTY_STRING)
+        (asserts! (is-string-valid category u32) ERR_EMPTY_STRING)
+        
+        (map-set protocol-registry
+            { protocol-address: protocol }
+            (merge (unwrap! (map-get? protocol-registry { protocol-address: protocol }) ERR_PROTOCOL_NOT_FOUND)
+                {
+                    name: name,
+                    category: category
+                }
+            )
+        )
+        (ok true)
+    )
+)
+
+(define-public (deactivate-protocol (protocol principal))
+    (begin
+        (asserts! (is-protocol-owner tx-sender protocol) ERR_NOT_PROTOCOL_OWNER)
+        (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+        
+        (map-set protocol-registry
+            { protocol-address: protocol }
+            (merge (unwrap! (map-get? protocol-registry { protocol-address: protocol }) ERR_PROTOCOL_NOT_FOUND)
+                { is-active: false }
+            )
+        )
+        (ok true)
+    )
+)
+
+;; Score Recording Functions
+
+(define-public (record-protocol-score
+    (protocol principal)
+    (security uint)
+    (liquidity uint)
+    (decentralization uint)
+    (operational uint))
+    (let
+        (
+            (total (calculate-total-score security liquidity decentralization operational))
+            (grade (score-to-grade total))
+            (existing-score (get-protocol-score protocol))
+        )
+        (begin
+            (asserts! (is-registered-oracle tx-sender) ERR_NOT_ORACLE)
+            (asserts! (var-get contract-initialized) ERR_CONTRACT_NOT_INITIALIZED)
+            (asserts! (not (is-system-paused)) ERR_SYSTEM_PAUSED)
+            (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+            (asserts! (is-protocol-active protocol) ERR_PROTOCOL_PAUSED)
+            (asserts! (not (is-protocol-paused protocol)) ERR_PROTOCOL_PAUSED)
+            (asserts! (is-valid-score security) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score liquidity) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score decentralization) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score operational) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score total) ERR_INVALID_SCORE)
+            
+            ;; Check for extreme score deviation if previous score exists
+            (match existing-score
+                prev-score 
+                    (asserts! (is-score-deviation-acceptable (get total-score prev-score) total) ERR_SCORE_DEVIATION_TOO_HIGH)
+                true
+            )
+            
+            ;; Update protocol scores
+            (map-set protocol-scores
+                { protocol-address: protocol }
+                {
+                    total-score: total,
+                    grade: grade,
+                    security-score: security,
+                    liquidity-score: liquidity,
+                    decentralization-score: decentralization,
+                    operational-score: operational,
+                    last-updated: stacks-block-height,
+                    stacks-block-height: stacks-block-height
+                }
+            )
+            
+            ;; Store historical record
+            (map-set historical-scores
+                {
+                    protocol-address: protocol,
+                    timestamp: stacks-block-height
+                }
+                {
+                    total-score: total,
+                    grade: grade,
+                    stacks-block-height: stacks-block-height
+                }
+            )
+            
+            ;; Update oracle submission count
+            (map-set registered-oracles
+                { oracle-address: tx-sender }
+                (merge (unwrap! (map-get? registered-oracles { oracle-address: tx-sender }) ERR_ORACLE_NOT_REGISTERED)
+                    { total-submissions: (+ (get total-submissions (unwrap! (map-get? registered-oracles { oracle-address: tx-sender }) ERR_ORACLE_NOT_REGISTERED)) u1) }
+                )
+            )
+            
+            (ok total)
+        )
+    )
+)
+
+(define-public (record-security-metrics
+    (protocol principal)
+    (audit-status bool)
+    (audit-score uint)
+    (admin-keys-score uint)
+    (time-locks-score uint)
+    (bug-bounty-score uint)
+    (upgradeability-score uint))
+    (let
+        (
+            (total (calculate-security-score audit-score admin-keys-score time-locks-score bug-bounty-score upgradeability-score))
+        )
+        (begin
+            (asserts! (is-registered-oracle tx-sender) ERR_NOT_ORACLE)
+            (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+            (asserts! (is-valid-score audit-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score admin-keys-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score time-locks-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score bug-bounty-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score upgradeability-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score total) ERR_INVALID_SCORE)
+            
+            (map-set security-metrics
+                { protocol-address: protocol }
+                {
+                    audit-status: audit-status,
+                    audit-score: audit-score,
+                    admin-keys-score: admin-keys-score,
+                    time-locks-score: time-locks-score,
+                    bug-bounty-score: bug-bounty-score,
+                    upgradeability-score: upgradeability-score,
+                    total-security-score: total
+                }
+            )
+            (ok total)
+        )
+    )
+)
+
+(define-public (record-liquidity-metrics
+    (protocol principal)
+    (tvl uint)
+    (tvl-score uint)
+    (depth-score uint)
+    (volume-score uint)
+    (volatility-score uint)
+    (exit-capacity-score uint))
+    (let
+        (
+            (total (calculate-liquidity-score tvl-score depth-score volume-score volatility-score exit-capacity-score))
+        )
+        (begin
+            (asserts! (is-registered-oracle tx-sender) ERR_NOT_ORACLE)
+            (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+            (asserts! (is-valid-score tvl-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score depth-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score volume-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score volatility-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score exit-capacity-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score total) ERR_INVALID_SCORE)
+            
+            (map-set liquidity-metrics
+                { protocol-address: protocol }
+                {
+                    tvl: tvl,
+                    tvl-score: tvl-score,
+                    depth-score: depth-score,
+                    volume-score: volume-score,
+                    volatility-score: volatility-score,
+                    exit-capacity-score: exit-capacity-score,
+                    total-liquidity-score: total
+                }
+            )
+            (ok total)
+        )
+    )
+)
+
+(define-public (record-decentralization-metrics
+    (protocol principal)
+    (whale-score uint)
+    (governance-score uint)
+    (oracle-score uint)
+    (user-base-score uint)
+    (transparency-score uint))
+    (let
+        (
+            (total (calculate-decentralization-score whale-score governance-score oracle-score user-base-score transparency-score))
+        )
+        (begin
+            (asserts! (is-registered-oracle tx-sender) ERR_NOT_ORACLE)
+            (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+            (asserts! (is-valid-score whale-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score governance-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score oracle-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score user-base-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score transparency-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score total) ERR_INVALID_SCORE)
+            
+            (map-set decentralization-metrics
+                { protocol-address: protocol }
+                {
+                    whale-concentration-score: whale-score,
+                    governance-score: governance-score,
+                    oracle-score: oracle-score,
+                    user-base-score: user-base-score,
+                    transparency-score: transparency-score,
+                    total-decentralization-score: total
+                }
+            )
+            (ok total)
+        )
+    )
+)
+
+(define-public (record-operational-metrics
+    (protocol principal)
+    (uptime-score uint)
+    (incidents-score uint)
+    (age-score uint)
+    (documentation-score uint))
+    (let
+        (
+            (total (calculate-operational-score uptime-score incidents-score age-score documentation-score))
+        )
+        (begin
+            (asserts! (is-registered-oracle tx-sender) ERR_NOT_ORACLE)
+            (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+            (asserts! (is-valid-score uptime-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score incidents-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score age-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score documentation-score) ERR_INVALID_SCORE)
+            (asserts! (is-valid-score total) ERR_INVALID_SCORE)
+            
+            (map-set operational-metrics
+                { protocol-address: protocol }
+                {
+                    uptime-score: uptime-score,
+                    incidents-score: incidents-score,
+                    age-score: age-score,
+                    documentation-score: documentation-score,
+                    total-operational-score: total
+                }
+            )
+            (ok total)
+        )
+    )
+)
+
+;; User Alert Management Functions
+
+(define-public (set-user-alert
+    (protocol principal)
+    (threshold uint)
+    (alert-type (string-ascii 16)))
+    (begin
+        (asserts! (var-get contract-initialized) ERR_CONTRACT_NOT_INITIALIZED)
+        (asserts! (not (is-system-paused)) ERR_SYSTEM_PAUSED)
+        (asserts! (protocol-exists protocol) ERR_PROTOCOL_NOT_FOUND)
+        (asserts! (is-valid-score threshold) ERR_INVALID_THRESHOLD)
+        (asserts! (not (has-max-alerts tx-sender)) ERR_MAX_ALERTS_REACHED)
+        
+        ;; Check if alert already exists
+        (asserts! (is-none (map-get? user-alerts { user: tx-sender, protocol-address: protocol })) ERR_ALERT_ALREADY_EXISTS)
+        
+        (map-set user-alerts
+            {
+                user: tx-sender,
+                protocol-address: protocol
+            }
+            {
+                threshold: threshold,
+                alert-type: alert-type,
+                is-active: true,
+                last-triggered: u0
+            }
+        )
+        
+        ;; Increment user alert count
+        (map-set user-alert-count
+            { user: tx-sender }
+            { count: (+ (get-user-alert-count tx-sender) u1) }
+        )
+        
+        (ok true)
+    )
+)
+
+(define-public (update-alert-threshold
+    (protocol principal)
+    (new-threshold uint))
+    (begin
+        (asserts! (is-valid-score new-threshold) ERR_INVALID_THRESHOLD)
+        (asserts! (is-some (map-get? user-alerts { user: tx-sender, protocol-address: protocol })) ERR_ALERT_NOT_FOUND)
+        
+        (map-set user-alerts
+            {
+                user: tx-sender,
+                protocol-address: protocol
+            }
+            (merge (unwrap! (map-get? user-alerts { user: tx-sender, protocol-address: protocol }) ERR_ALERT_NOT_FOUND)
+                { threshold: new-threshold }
+            )
+        )
+        (ok true)
+    )
+)
+
+(define-public (remove-user-alert (protocol principal))
+    (begin
+        (asserts! (is-some (map-get? user-alerts { user: tx-sender, protocol-address: protocol })) ERR_ALERT_NOT_FOUND)
+        
+        (map-delete user-alerts
+            {
+                user: tx-sender,
+                protocol-address: protocol
+            }
+        )
+        
+        ;; Decrement user alert count
+        (map-set user-alert-count
+            { user: tx-sender }
+            { count: (- (get-user-alert-count tx-sender) u1) }
+        )
+        
+        (ok true)
+    )
+)
+
+(define-public (toggle-alert-status (protocol principal))
+    (let
+        (
+            (alert (unwrap! (map-get? user-alerts { user: tx-sender, protocol-address: protocol }) ERR_ALERT_NOT_FOUND))
+        )
+        (begin
+            (map-set user-alerts
+                {
+                    user: tx-sender,
+                    protocol-address: protocol
+                }
+                (merge alert
+                    { is-active: (not (get is-active alert)) }
+                )
+            )
+            (ok true)
+        )
+    )
+)
