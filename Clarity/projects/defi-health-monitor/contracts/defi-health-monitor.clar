@@ -440,3 +440,149 @@
 (define-private (has-max-protocols)
     (>= (var-get total-protocols) MAX_PROTOCOLS)
 )
+
+;; ===== READ-ONLY PUBLIC FUNCTIONS =====
+
+;; Protocol Health Queries
+
+(define-read-only (get-protocol-health (protocol principal))
+    (ok (map-get? protocol-scores { protocol-address: protocol }))
+)
+
+(define-read-only (get-protocol-details (protocol principal))
+    (ok (map-get? protocol-registry { protocol-address: protocol }))
+)
+
+(define-read-only (get-security-breakdown (protocol principal))
+    (ok (map-get? security-metrics { protocol-address: protocol }))
+)
+
+(define-read-only (get-liquidity-breakdown (protocol principal))
+    (ok (map-get? liquidity-metrics { protocol-address: protocol }))
+)
+
+(define-read-only (get-decentralization-breakdown (protocol principal))
+    (ok (map-get? decentralization-metrics { protocol-address: protocol }))
+)
+
+(define-read-only (get-operational-breakdown (protocol principal))
+    (ok (map-get? operational-metrics { protocol-address: protocol }))
+)
+
+;; Historical Data Queries
+
+(define-read-only (get-historical-score 
+    (protocol principal)
+    (timestamp uint))
+    (ok (map-get? historical-scores 
+        { 
+            protocol-address: protocol,
+            timestamp: timestamp
+        }
+    ))
+)
+
+;; Alert Queries
+
+(define-read-only (get-user-alert 
+    (user principal)
+    (protocol principal))
+    (ok (map-get? user-alerts 
+        {
+            user: user,
+            protocol-address: protocol
+        }
+    ))
+)
+
+(define-read-only (get-user-total-alerts (user principal))
+    (ok (get-user-alert-count user))
+)
+
+;; System Information Queries
+
+(define-read-only (get-total-protocols)
+    (ok (var-get total-protocols))
+)
+
+(define-read-only (get-contract-initialized)
+    (ok (var-get contract-initialized))
+)
+
+(define-read-only (get-contract-paused)
+    (ok (var-get contract-paused))
+)
+
+(define-read-only (get-score-update-interval)
+    (ok (var-get score-update-interval))
+)
+
+(define-read-only (check-oracle-registered (oracle principal))
+    (ok (is-registered-oracle oracle))
+)
+
+(define-read-only (get-oracle-info (oracle principal))
+    (ok (map-get? registered-oracles { oracle-address: oracle }))
+)
+
+(define-read-only (check-protocol-paused (protocol principal))
+    (ok (is-protocol-paused protocol))
+)
+
+(define-read-only (get-protocol-pause-info (protocol principal))
+    (ok (map-get? protocol-pause-status { protocol-address: protocol }))
+)
+
+;; Validation Queries
+
+(define-read-only (check-protocol-exists (protocol principal))
+    (ok (protocol-exists protocol))
+)
+
+(define-read-only (check-protocol-active (protocol principal))
+    (ok (is-protocol-active protocol))
+)
+
+(define-read-only (check-score-stale (protocol principal))
+    (match (get-protocol-score protocol)
+        score (ok (is-score-stale (get last-updated score)))
+        (err ERR_PROTOCOL_NOT_FOUND)
+    )
+)
+
+;; Composite Queries - Return multiple data points
+
+(define-read-only (get-full-protocol-data (protocol principal))
+    (let
+        (
+            (registry (map-get? protocol-registry { protocol-address: protocol }))
+            (scores (map-get? protocol-scores { protocol-address: protocol }))
+            (security (map-get? security-metrics { protocol-address: protocol }))
+            (liquidity (map-get? liquidity-metrics { protocol-address: protocol }))
+            (decentralization (map-get? decentralization-metrics { protocol-address: protocol }))
+            (operational (map-get? operational-metrics { protocol-address: protocol }))
+        )
+        (ok {
+            registry: registry,
+            scores: scores,
+            security: security,
+            liquidity: liquidity,
+            decentralization: decentralization,
+            operational: operational
+        })
+    )
+)
+
+(define-read-only (get-protocol-summary (protocol principal))
+    (match (get-protocol-score protocol)
+        score 
+            (ok {
+                protocol: protocol,
+                total-score: (get total-score score),
+                grade: (get grade score),
+                last-updated: (get last-updated score),
+                is-stale: (is-score-stale (get last-updated score))
+            })
+        (err ERR_PROTOCOL_NOT_FOUND)
+    )
+)
