@@ -1,4 +1,51 @@
-# DeFi Protocol Health Monitor - Stacks Implementation
+ONE
+
+
+Guardian Gateway proposal (Clarity contract)
+
+Bitcoin-anchored oracle network for Stacks DeFi
+
+Guardian Gateway is the first oracle protocol that anchors every price feed to Bitcoin's blockchain, providing secure, reliable data for DeFi applications on Stacks. By combining Stacks' Proof-of-Transfer with an 8-layer validation system, Guardian Gateway offers something no other oracle can: Bitcoin-grade security with financial insurance against bad data.
+Why Guardian Gateway?
+The Problem: DeFi protocols rely on price oracles that can be manipulated or fail catastrophically. Oracle failures have caused over $240M in losses (Mango Markets: $110M, Cream Finance: $130M).
+The Solution: Every price feed is validated through 8 security layers and anchored to Bitcoin's blockchain before DeFi protocols can use it. Oracle operators stake STX and Bitcoin as bonds—bad data gets slashed, good data gets rewarded.
+Key Features
+
+Bitcoin-Anchored Security - Every data point inherits Bitcoin's finality through Stacks' Proof-of-Transfer
+8-Layer Validation System - Multi-source verification, consensus mechanisms, and slashing conditions
+Insurance Fund - Protocols receive compensation if bad data causes losses
+Permissionless - Anyone can become an oracle operator by staking bonds
+Self-Sustaining - Revenue from protocol subscriptions and query fees
+100% Open Source - MIT licensed for maximum transparency and community trust
+
+Technology Stack
+
+Smart Contracts: Clarity (Stacks blockchain)
+Frontend: React + TypeScript
+Oracle Network: Distributed validators with automated price feeds
+Data Sources: Multi-source aggregation from major exchanges and oracles
+
+Current Status
+
+✅ Smart contracts testnet-validated
+✅ dApp with functional wallet integration
+🔄 Security audit in progress
+🔄 Protocol integrations underway
+
+For Developers
+Guardian Gateway provides secure price feeds for:
+
+DEX protocols (automated market makers)
+Lending/borrowing platforms
+Synthetic asset protocols
+Any DeFi application requiring reliable price data
+
+
+
+TWO
+
+
+# DEFI PROTOCOL HEALTH MONITOR - Stacks Implementation
 
 ## Project Overview
 
