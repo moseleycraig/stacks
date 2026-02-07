@@ -1,14 +1,16 @@
 [project]
-name = 'btc-oracle-sec-layer'
+name = 'defi-health-monitor'
 description = ''
 authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
-[contracts.bitcoin-oracle-core]
-path = 'contracts/bitcoin-oracle-core.clar'
+[contracts.defi-health-monitor]
+path = 'contracts/defi-health-monitor.clar'
 clarity_version = 3
 epoch = 3.1
+[repl.analysis]
+passes = ['check_checker']
 
 [repl.analysis.check_checker]
 strict = false
